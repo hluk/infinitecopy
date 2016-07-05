@@ -20,6 +20,10 @@ Item {
         spacing: 10
         padding: 5
 
+        ClipboardItemRow {
+            text: index
+        }
+
         ClipboardItemText {
             text: itemText || qsTr('<EMPTY>')
         }
