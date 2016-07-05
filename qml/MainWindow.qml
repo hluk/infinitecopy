@@ -34,7 +34,7 @@ ColumnLayout {
                 shortcut: StandardKey.Copy
                 iconName: "edit-copy"
                 enabled: clipboardItemView.currentIndex >= 0
-                onTriggered: clipboard.copyItem(currentIndex)
+                onTriggered: clipboard.text = clipboardItemView.currentItem.text
             }
 
             // Delete item action

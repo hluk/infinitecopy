@@ -21,9 +21,15 @@ class Clipboard(QObject):
 
     def onClipboardChanged(self, mode):
         if mode == QClipboard.Clipboard:
-            self.clipboardTimer.start()
+            if not QGuiApplication.clipboard().ownsClipboard():
+                self.clipboardTimer.start()
+            else:
+                self.clipboardTimer.stop()
         elif mode == QClipboard.Selection:
-            self.selectionTimer.start()
+            if not QGuiApplication.clipboard().ownsSelection():
+                self.selectionTimer.start()
+            else:
+                self.selectionTimer.stop()
 
     def onClipboardChangedAfterDelay(self):
         self.emitChanged(QClipboard.Selection)

@@ -5,6 +5,7 @@ Item {
     width: delegate.ListView.view.width
     height: row.height
     clip: true
+    property string text: itemText
 
     MouseArea {
         anchors.fill: parent
