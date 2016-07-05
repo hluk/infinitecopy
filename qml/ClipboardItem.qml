@@ -21,7 +21,7 @@ Item {
         }
 
         ClipboardItemCopyTime {
-            text: copyTime || ''
+            text: copyTime ? Date(copyTime) : ''
         }
     }
 }
