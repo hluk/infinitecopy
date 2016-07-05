@@ -1,9 +1,11 @@
-import QtQuick 2.0
+import QtQuick 2.7
 
 Item {
     id: delegate
+
     width: delegate.ListView.view.width
     height: row.height
+
     clip: true
     property string text: itemText
 
@@ -16,6 +18,7 @@ Item {
     Row {
         id: row
         spacing: 10
+        padding: 5
 
         ClipboardItemText {
             text: itemText || qsTr('<EMPTY>')
