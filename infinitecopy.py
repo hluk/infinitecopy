@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 
-from PyQt5.QtCore import QSortFilterProxyModel, QUrl
+from PyQt5.QtCore import QDir, QSortFilterProxyModel, QStandardPaths, QUrl
 from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtQml import QQmlComponent
 from PyQt5.QtQuick import QQuickView
@@ -10,14 +10,24 @@ from PyQt5.QtSql import QSqlDatabase
 from InfiniteCopy.ClipboardItemModel import ClipboardItemModel
 from InfiniteCopy.Clipboard import Clipboard
 
+def openDataBase():
+    db = QSqlDatabase.addDatabase('QSQLITE')
+    dataPath = QStandardPaths.writableLocation(QStandardPaths.AppLocalDataLocation)
+    if not QDir(dataPath).mkpath('.'):
+        raise Exception('Failed to create data directory {}'.format(dataPath))
+
+    dbPath = dataPath + '/infinitecopy_items.sql'
+    print('Using item database "{}".'.format(dbPath))
+    db.setDatabaseName(dbPath)
+    db.open()
+
 def main():
     app = QGuiApplication(sys.argv)
+    app.setApplicationName('InfiniteCopy')
+
+    openDataBase()
 
     view = QQuickView()
-
-    db = QSqlDatabase.addDatabase("QSQLITE")
-    db.setDatabaseName('infinitecopy_items.sql')
-    db.open()
 
     clipboardItemModel = ClipboardItemModel()
     clipboardItemModel.create()
