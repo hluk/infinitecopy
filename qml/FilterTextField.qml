@@ -6,5 +6,10 @@ TextField {
     property QtObject model: null
 
     placeholderText: qsTr("Filter items")
-    onTextChanged: model ? model.setFilterRegExp(text) : null
+    onTextChanged: {
+        if (model) {
+            model.filterCaseSensitivity = Qt.CaseInsensitive
+            model.setFilterRegExp(text)
+        }
+    }
 }
