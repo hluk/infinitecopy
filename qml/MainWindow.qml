@@ -30,7 +30,7 @@ ColumnLayout {
 
             // Copy item action
             MenuItem {
-                text: "&Copy"
+                text: qsTr("&Copy")
                 shortcut: StandardKey.Copy
                 iconName: "edit-copy"
                 enabled: clipboardItemView.currentIndex >= 0
@@ -39,7 +39,7 @@ ColumnLayout {
 
             // Delete item action
             MenuItem {
-                text: "&Delete"
+                text: qsTr("&Delete")
                 shortcut: StandardKey.Delete
                 iconName: "edit-delete"
                 enabled: clipboardItemView.currentIndex >= 0
