@@ -57,6 +57,20 @@ ColumnLayout {
             }
         }
 
+        // Copy item action
+        Shortcut {
+            sequence: 'Enter'
+            onActivated: {
+                clipboard.text = clipboardItemView.currentItem.text
+            }
+        }
+        Shortcut {
+            sequence: 'Return'
+            onActivated: {
+                clipboard.text = clipboardItemView.currentItem.text
+            }
+        }
+
         // Item context menu shortcut
         Shortcut {
             sequence: 'Menu'
