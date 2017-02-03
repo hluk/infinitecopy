@@ -1,8 +1,10 @@
+from InfiniteCopy.MimeFormats import *
+
 from PyQt5.QtCore import pyqtProperty, pyqtSignal, QObject, QTimer
 from PyQt5.QtGui import QGuiApplication, QClipboard
 
 class Clipboard(QObject):
-    changed = pyqtSignal(str)
+    changed = pyqtSignal(dict)
 
     def __init__(self):
         QObject.__init__(self)
@@ -18,6 +20,11 @@ class Clipboard(QObject):
         self.selectionTimer.setInterval(1000)
         self.selectionTimer.setSingleShot(True)
         self.selectionTimer.timeout.connect(self.onSelectionChangedAfterDelay)
+
+        self.formats = set([mimeText])
+
+    def setFormats(self, formats):
+        self.formats = set(formats)
 
     def onClipboardChanged(self, mode):
         if mode == QClipboard.Clipboard:
@@ -39,8 +46,12 @@ class Clipboard(QObject):
 
     def emitChanged(self, mode):
         clipboard = QGuiApplication.clipboard()
-        text = clipboard.text()
-        self.changed.emit(text)
+        mimeData = clipboard.mimeData()
+        data = {}
+        for format in self.formats:
+            if mimeData.hasFormat(format):
+                data[format] = mimeData.data(format)
+        self.changed.emit(data)
 
     @pyqtProperty(str)
     def text(self):

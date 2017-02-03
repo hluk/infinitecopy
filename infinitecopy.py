@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+from InfiniteCopy.ClipboardItemModel import ClipboardItemModel
+from InfiniteCopy.ClipboardItemModelImageProvider import ClipboardItemModelImageProvider
+from InfiniteCopy.Clipboard import Clipboard
+from InfiniteCopy.MimeFormats import *
+
 import sys
 
 from PyQt5.QtCore import QDir, QSortFilterProxyModel, QStandardPaths, QUrl
@@ -6,9 +11,6 @@ from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtQml import QQmlComponent
 from PyQt5.QtQuick import QQuickView
 from PyQt5.QtSql import QSqlDatabase
-
-from InfiniteCopy.ClipboardItemModel import ClipboardItemModel
-from InfiniteCopy.Clipboard import Clipboard
 
 def openDataBase():
     db = QSqlDatabase.addDatabase('QSQLITE')
@@ -36,6 +38,12 @@ def main():
     filterProxyModel.setSourceModel(clipboardItemModel)
 
     clipboard = Clipboard()
+    clipboard.setFormats([
+        mimeText,
+        mimeHtml,
+        mimePng,
+        mimeSvg
+        ])
     clipboard.changed.connect(clipboardItemModel.addItem)
 
     context = view.rootContext()
@@ -49,6 +57,9 @@ def main():
 
     engine = view.engine()
     engine.quit.connect(QGuiApplication.quit)
+
+    imageProvider = ClipboardItemModelImageProvider(clipboardItemModel)
+    engine.addImageProvider("items", imageProvider)
 
     return app.exec_()
 

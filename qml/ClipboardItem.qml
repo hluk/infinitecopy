@@ -8,11 +8,12 @@ Item {
 
     clip: true
     property string text: itemText
+    property string html: itemHtml
 
     MouseArea {
         anchors.fill: parent
         onClicked: currentIndex = index
-        onDoubleClicked: clipboard.text = itemText
+        onDoubleClicked: clipboard.text = text
     }
 
     Row {
@@ -21,14 +22,28 @@ Item {
         padding: 5
 
         ClipboardItemRow {
+            id: rowNumberText
             text: index
         }
 
+        Image {
+            source: "image://items/" + index
+            width: Math.min(sourceSize.width, delegate.parent.width - rowNumberText.width - copyTimeText.width - 3 * spacing)
+            fillMode: Image.PreserveAspectFit
+        }
+
+        ClipboardItemHtml {
+            text: html
+            visible: html != ''
+        }
+
         ClipboardItemText {
-            text: itemText || qsTr('<EMPTY>')
+            text: delegate.text
+            visible: html == ''
         }
 
         ClipboardItemCopyTime {
+            id: copyTimeText
             text: copyTime ? Date(copyTime) : ''
         }
     }

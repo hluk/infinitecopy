@@ -1,5 +1,32 @@
-from PyQt5.QtCore import pyqtProperty, pyqtSlot, Qt, QDateTime
+from InfiniteCopy.MimeFormats import *
+
+import hashlib
+import pickle
+
+from PyQt5.QtCore import pyqtProperty, pyqtSlot, Qt, QDateTime, QByteArray, QBuffer
+from PyQt5.QtGui import QImage
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery, QSqlRecord, QSqlTableModel
+
+def createHash(data):
+    hash = hashlib.md5()
+
+    for format in data:
+        hash.update(format.encode('utf-8'))
+        hash.update(b';;')
+        hash.update(data[format])
+
+    return hash.hexdigest()
+
+def serializeData(data):
+    return pickle.dumps(data)
+
+def deserializeData(bytes):
+    try:
+        return pickle.loads(bytes)
+    except EOFError:
+        return {}
+    except TypeError:
+        return {}
 
 def prepareQuery(query, queryText):
     if not query.prepare(queryText):
@@ -16,18 +43,20 @@ class ClipboardItemModel(QSqlTableModel):
         QSqlTableModel.__init__(self)
         self.roles = {}
         self.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        self.lastAddedText = ""
+        self.lastAddedHash = ""
 
     def create(self):
         try:
-            QSqlDatabase.database().transaction();
+            QSqlDatabase.database().transaction()
 
             query = QSqlQuery()
             prepareQuery(query,
                 """
                 create table clipboardItems(
+                    copyTime timestamp,
+                    itemHash text,
                     itemText text,
-                    copyTime timestamp
+                    itemData blob
                 );
                 """)
             executeQuery(query)
@@ -37,18 +66,32 @@ class ClipboardItemModel(QSqlTableModel):
             QSqlDatabase.database().commit();
 
         self.setTable('clipboardItems')
-        self.setSort(1, Qt.DescendingOrder)
+        self.setSort(0, Qt.DescendingOrder)
         self.select()
         self.generateRoleNames()
 
-    def addItem(self, text):
-        if text == "" or self.lastAddedText == text:
-            return;
 
-        self.lastAddedText = text
+    def addItem(self, data):
+        hash = createHash(data)
+        if self.lastAddedHash == hash:
+            return
+
+        self.lastAddedHash = hash
+
+        query = QSqlQuery()
+        prepareQuery(query,
+            """
+            delete from clipboardItems where itemHash = :hash;
+            """)
+        query.bindValue(':hash', hash)
+        executeQuery(query)
+
+        text = data.get(mimeText, '')
 
         record = self.record()
+        record.setValue('itemHash', hash)
         record.setValue('itemText', text)
+        record.setValue('itemData', QByteArray(serializeData(data)))
         record.setValue('copyTime', QDateTime.currentDateTime())
 
         if not self.insertRecord(0, record):
@@ -70,6 +113,11 @@ class ClipboardItemModel(QSqlTableModel):
         for i in range(self.columnCount()):
             self.roles[Qt.UserRole + i + 1] = self.headerData(i, Qt.Horizontal).encode()
 
+        role = Qt.UserRole + self.columnCount()
+        self.itemHtmlRole = role
+        self.roles[role] = b'itemHtml'
+        role += 1
+
     def roleNames(self):
         return self.roles
 
@@ -77,5 +125,26 @@ class ClipboardItemModel(QSqlTableModel):
         if role < Qt.UserRole:
             return QSqlTableModel.data(self, index, role)
 
-        column = role - Qt.UserRole - 1
-        return self.record(index.row()).value(column)
+        record = self.record(index.row())
+
+        if role < Qt.UserRole + self.columnCount():
+            column = role - Qt.UserRole - 1
+            return record.value(column)
+
+        dataValue = record.value('itemData')
+        data = deserializeData(dataValue)
+
+        if role == self.itemHtmlRole and mimeHtml in data:
+            return data[mimeHtml]
+
+        return None
+
+    def imageData(self, row):
+        record = self.record(row)
+        dataValue = record.value('itemData')
+        data = deserializeData(dataValue)
+
+        if mimePng in data:
+            return data[mimePng]
+
+        return None
