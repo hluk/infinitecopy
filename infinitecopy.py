@@ -46,6 +46,11 @@ def main():
         ])
     clipboard.changed.connect(clipboardItemModel.addItem)
 
+    engine = view.engine()
+
+    imageProvider = ClipboardItemModelImageProvider(clipboardItemModel)
+    engine.addImageProvider("items", imageProvider)
+
     context = view.rootContext()
     context.setContextProperty('clipboardItemModel', clipboardItemModel)
     context.setContextProperty('clipboardItemModelFilterProxy', filterProxyModel)
@@ -55,11 +60,7 @@ def main():
     view.setGeometry(100, 100, 400, 240)
     view.show()
 
-    engine = view.engine()
     engine.quit.connect(QGuiApplication.quit)
-
-    imageProvider = ClipboardItemModelImageProvider(clipboardItemModel)
-    engine.addImageProvider("items", imageProvider)
 
     return app.exec_()
 

@@ -27,7 +27,7 @@ Item {
         }
 
         Image {
-            source: "image://items/" + index
+            source: hasImage ? 'image://items/' + index : ''
             width: Math.min(sourceSize.width, delegate.parent.width - rowNumberText.width - copyTimeText.width - 3 * spacing)
             fillMode: Image.PreserveAspectFit
         }

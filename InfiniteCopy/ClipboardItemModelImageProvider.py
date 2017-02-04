@@ -18,5 +18,7 @@ class ClipboardItemModelImageProvider(QQuickImageProvider):
             return QPixmap(), QSize()
 
         pixmap = QPixmap()
-        pixmap.loadFromData(data)
+        if not pixmap.loadFromData(data):
+            return QPixmap(), QSize()
+
         return pixmap, pixmap.size()

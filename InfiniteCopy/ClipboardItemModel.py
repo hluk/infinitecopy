@@ -118,6 +118,10 @@ class ClipboardItemModel(QSqlTableModel):
         self.roles[role] = b'itemHtml'
         role += 1
 
+        self.itemHasImage = role
+        self.roles[role] = b'hasImage'
+        role += 1
+
     def roleNames(self):
         return self.roles
 
@@ -136,6 +140,9 @@ class ClipboardItemModel(QSqlTableModel):
 
         if role == self.itemHtmlRole:
             return data.get(mimeHtml, '')
+
+        if role == self.itemHasImage:
+            return mimePng in data
 
         return None
 
