@@ -134,8 +134,8 @@ class ClipboardItemModel(QSqlTableModel):
         dataValue = record.value('itemData')
         data = deserializeData(dataValue)
 
-        if role == self.itemHtmlRole and mimeHtml in data:
-            return data[mimeHtml]
+        if role == self.itemHtmlRole:
+            return data.get(mimeHtml, '')
 
         return None
 
