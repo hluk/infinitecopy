@@ -10,6 +10,13 @@ Item {
     property string text: itemText
     property string html: itemHtml
 
+    Rectangle {
+        anchors.fill: parent
+        color: index % 2 ? 'black' : 'transparent'
+        opacity: currentIndex == index ? 0 : 0.05
+        Behavior on opacity { SmoothedAnimation { velocity: 0.2 } }
+    }
+
     MouseArea {
         anchors.fill: parent
         onClicked: currentIndex = index

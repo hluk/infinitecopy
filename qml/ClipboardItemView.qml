@@ -2,7 +2,13 @@ import QtQuick 2.0
 import QtQuick.Controls 1.4
 
 ListView {
+    id: listView
     focus: true
     delegate: ClipboardItem {}
-    highlight: ClipboardItemViewHighlight {}
+
+    // Custom item selection highlight.
+    highlightFollowsCurrentItem: false
+    highlight: ClipboardItemViewHighlight {
+        parentListView: listView
+    }
 }
