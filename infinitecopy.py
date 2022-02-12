@@ -26,6 +26,7 @@ def openDataBase():
 def main():
     app = QGuiApplication(sys.argv)
     app.setApplicationName('InfiniteCopy')
+    app.setApplicationDisplayName('InfiniteCopy')
 
     openDataBase()
 
