@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Simple clipboard manager"
 license = "GPL-3.0-or-later"
 authors = ["Lukas Holecek <hluk@email.cz>"]
+include = ["infinitecopy.png", "qml/*"]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"

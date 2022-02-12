@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # SPDX-License-Identifier: LGPL-2.0-or-later
 import sys
+from pathlib import Path
 
 from PyQt5.QtCore import (
     QDir,
@@ -9,7 +10,7 @@ from PyQt5.QtCore import (
     QUrl,
     qInfo,
 )
-from PyQt5.QtGui import QGuiApplication
+from PyQt5.QtGui import QGuiApplication, QIcon
 from PyQt5.QtQuick import QQuickView
 from PyQt5.QtSql import QSqlDatabase
 
@@ -27,11 +28,11 @@ def openDataBase():
         QStandardPaths.AppLocalDataLocation
     )
     if not QDir(dataPath).mkpath("."):
-        raise Exception("Failed to create data directory {}".format(dataPath))
+        raise Exception(f"Failed to create data directory {dataPath}")
 
-    dbPath = dataPath + "/infinitecopy_items.sql"
-    qInfo('Using item database "{}".'.format(dbPath))
-    db.setDatabaseName(dbPath)
+    dbPath = Path(dataPath, "infinitecopy_items.sql")
+    qInfo(f'Using item database "{dbPath}"')
+    db.setDatabaseName(str(dbPath))
     db.open()
 
 
@@ -39,6 +40,15 @@ def main():
     app = QGuiApplication(sys.argv)
     app.setApplicationName("InfiniteCopy")
     app.setApplicationDisplayName("InfiniteCopy")
+
+    path = Path(__file__).parent
+    qmlPath = Path(path, "qml")
+    if not qmlPath.exists():
+        path = path.parent
+        qmlPath = Path(path, "qml")
+
+    iconPath = Path(path, "infinitecopy.png")
+    app.setWindowIcon(QIcon(str(iconPath)))
 
     openDataBase()
 
@@ -69,7 +79,7 @@ def main():
     )
     context.setContextProperty("clipboard", clipboard)
 
-    view.setSource(QUrl.fromLocalFile("qml/MainWindow.qml"))
+    view.setSource(QUrl.fromLocalFile(str(Path(qmlPath, "MainWindow.qml"))))
     view.setGeometry(100, 100, 400, 240)
     view.show()
 

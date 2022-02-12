@@ -100,8 +100,11 @@ jobs:
           --python-flag=no_site
           --assume-yes-for-downloads
           --plugin-enable=pyqt5
+          --plugin-enable=anti-bloat
+          --include-qt-plugins="sensible,sqldrivers,qml"
           --show-modules
           --show-scons
+          --include-data-dir=qml=qml
           ${{ matrix.nuitka-arguments }}
           infinitecopy
 
