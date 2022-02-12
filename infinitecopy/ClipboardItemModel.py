@@ -1,18 +1,10 @@
 import hashlib
 import pickle  # nosec
 
-from PyQt5.QtCore import (
-    QBuffer,
-    QByteArray,
-    QDateTime,
-    Qt,
-    pyqtProperty,
-    pyqtSlot,
-)
-from PyQt5.QtGui import QImage
-from PyQt5.QtSql import QSqlDatabase, QSqlQuery, QSqlRecord, QSqlTableModel
+from PyQt5.QtCore import QByteArray, QDateTime, Qt, pyqtSlot
+from PyQt5.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
 
-from infinitecopy.MimeFormats import *
+import infinitecopy.MimeFormats as formats
 
 
 def createHash(data):
@@ -109,7 +101,7 @@ class ClipboardItemModel(QSqlTableModel):
         query.bindValue(":hash", hash)
         executeQuery(query)
 
-        text = data.get(mimeText, "")
+        text = data.get(formats.mimeText, "")
 
         record = self.record()
         record.setValue("itemHash", hash)
@@ -168,10 +160,10 @@ class ClipboardItemModel(QSqlTableModel):
         data = deserializeData(dataValue)
 
         if role == self.itemHtmlRole:
-            return data.get(mimeHtml, "")
+            return data.get(formats.mimeHtml, "")
 
         if role == self.itemHasImage:
-            return mimePng in data
+            return formats.mimePng in data
 
         return None
 
@@ -180,7 +172,7 @@ class ClipboardItemModel(QSqlTableModel):
         dataValue = record.value("itemData")
         data = deserializeData(dataValue)
 
-        if mimePng in data:
-            return data[mimePng]
+        if formats.mimePng in data:
+            return data[formats.mimePng]
 
         return None

@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QObject, QTimer, pyqtProperty, pyqtSignal
 from PyQt5.QtGui import QClipboard, QGuiApplication
 
-from infinitecopy.MimeFormats import *
+from infinitecopy.MimeFormats import mimeText
 
 
 class Clipboard(QObject):
