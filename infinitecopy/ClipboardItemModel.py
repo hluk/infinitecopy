@@ -16,7 +16,7 @@ from infinitecopy.MimeFormats import *
 
 
 def createHash(data):
-    hash = hashlib.md5()
+    hash = hashlib.sha256()
 
     for format in data:
         hash.update(format.encode("utf-8"))
