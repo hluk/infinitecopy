@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# SPDX-License-Identifier: LGPL-2.0-or-later
 import sys
 
 from PyQt5.QtCore import (

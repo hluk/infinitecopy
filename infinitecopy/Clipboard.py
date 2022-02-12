@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: LGPL-2.0-or-later
 from PyQt5.QtCore import QObject, QTimer, pyqtProperty, pyqtSignal
 from PyQt5.QtGui import QClipboard, QGuiApplication
 

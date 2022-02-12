@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: LGPL-2.0-or-later
 import QtQuick 2.7
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.3

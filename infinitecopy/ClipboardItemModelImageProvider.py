@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: LGPL-2.0-or-later
 from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtQuick import QQuickImageProvider
