@@ -30,7 +30,7 @@ Item {
 
         ClipboardItemRow {
             id: rowNumberText
-            text: index
+            text: index + 1
         }
 
         Image {
