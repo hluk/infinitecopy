@@ -1,5 +1,5 @@
 import hashlib
-import pickle
+import pickle  # nosec
 
 from PyQt5.QtCore import (
     QBuffer,
@@ -27,12 +27,13 @@ def createHash(data):
 
 
 def serializeData(data):
-    return pickle.dumps(data)
+    return pickle.dumps(data)  # nosec
 
 
 def deserializeData(bytes):
     try:
-        return pickle.loads(bytes)
+        # FIXME: Avoid using unsafe pickle.
+        return pickle.loads(bytes)  # nosec
     except EOFError:
         return {}
     except TypeError:
