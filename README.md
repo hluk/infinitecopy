@@ -1,6 +1,15 @@
 InfiniteCopy is clipboard manager designed to run both desktop and mobile devices.
 
-The application is in very early stage!
+The application is in early stage of development.
+
+# Install and Run
+
+There is no need to install the app. Single file executables are provided.
+
+You can grab latest build artifacts from [a successful GitHub action
+run](https://github.com/hluk/infinitecopy/actions?query=is%3Asuccess).
+
+# Run from Source Code
 
 ## Requirements
 

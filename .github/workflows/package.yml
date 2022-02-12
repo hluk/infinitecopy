@@ -1,0 +1,116 @@
+---
+# yamllint disable rule:line-length
+name: package
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: ${{ matrix.buildname }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - macos-latest
+          - ubuntu-latest
+
+        python-version:
+          - 3.9
+
+        poetry-version:
+          - 1.1.11
+
+        include:
+          - os: windows-latest
+            buildname: Windows
+            artifact-name: infinitecopy for Windows
+            artifact-file: infinitecopy.exe
+            nuitka-arguments: --windows-icon-from-ico=infinitecopy.png --lto=no
+
+          - os: macos-latest
+            buildname: macOS
+            artifact-name: infinitecopy for macOS
+            artifact-file: infinitecopy.bin
+            nuitka-arguments: --macos-onefile-icon=infinitecopy.png --clang
+
+          - os: ubuntu-latest
+            buildname: Linux
+            artifact-name: infinitecopy for Linux
+            artifact-file: infinitecopy.bin
+            nuitka-arguments: --linux-onefile-icon=infinitecopy.png
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+        with:
+          submodules: false
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Use Poetry
+        uses: Gr1N/setup-poetry@v7
+        with:
+          poetry-version: ${{ matrix.poetry-version }}
+
+      - name: Install dependencies
+        run: poetry install --no-root --no-interaction
+
+      - name: (Linux) Install runtime dependencies
+        if: runner.os == 'Linux'
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          retry_wait_seconds: 30
+          max_attempts: 3
+          command: >-
+            sudo apt-get update &&
+            sudo apt-get install
+            libegl1
+            libopengl0
+
+      - name: (macOS) Fix build dependencies
+        if: runner.os == 'macOS'
+        shell: bash
+        run: >-
+          ln -s /usr/local/opt/openssl@1.1/lib/libcrypto.1.1.dylib /usr/local/lib/libcrypto.dylib &&
+          ln -s /usr/local/opt/openssl@1.1/lib/libssl.1.1.dylib /usr/local/lib/libssl.dylib
+
+      - name: Use version from Git
+        shell: bash
+        run: ./update_version.sh
+
+      - name: Create package
+        env:
+          PYTHONIOENCODING: utf-8
+          LD_LIBRARY_PATH: /usr/local/lib/:$LD_LIBRARY_PATH
+        run: >-
+          poetry run nuitka3
+          --onefile
+          --standalone
+          --python-flag=no_site
+          --assume-yes-for-downloads
+          --plugin-enable=pyqt5
+          --show-modules
+          --show-scons
+          ${{ matrix.nuitka-arguments }}
+          infinitecopy
+
+      - name: List package files
+        shell: bash
+        run: ls -lSh infinitecopy.dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: ${{ matrix.artifact-file }}
