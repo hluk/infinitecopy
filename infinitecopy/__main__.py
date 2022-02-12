@@ -15,7 +15,7 @@ from PyQt5.QtSql import QSqlDatabase
 
 import infinitecopy.MimeFormats as formats
 from infinitecopy.Clipboard import Clipboard
-from infinitecopy.ClipboardItemModel import ClipboardItemModel
+from infinitecopy.ClipboardItemModel import ClipboardItemModel, Column
 from infinitecopy.ClipboardItemModelImageProvider import (
     ClipboardItemModelImageProvider,
 )
@@ -49,6 +49,7 @@ def main():
 
     filterProxyModel = QSortFilterProxyModel()
     filterProxyModel.setSourceModel(clipboardItemModel)
+    filterProxyModel.setFilterKeyColumn(Column.TEXT)
 
     clipboard = Clipboard()
     clipboard.setFormats(

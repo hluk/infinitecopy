@@ -8,6 +8,13 @@ from PyQt5.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
 import infinitecopy.MimeFormats as formats
 
 
+class Column:
+    TIMESTAMP = 0
+    HASH = 1
+    TEXT = 2
+    DATA = 3
+
+
 def createHash(data):
     hash = hashlib.sha256()
 
