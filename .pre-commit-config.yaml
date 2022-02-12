@@ -1,0 +1,54 @@
+---
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: local
+    hooks:
+      - id: black
+        name: black
+        entry: poetry run black
+        language: system
+        types_or: [python]
+        args:
+          - --line-length=79
+
+  - repo: local
+    hooks:
+      - id: isort
+        name: isort
+        entry: poetry run isort
+        language: system
+        types_or: [python]
+        args:
+          - --line-length=79
+          - --profile=black
+
+  - repo: local
+    hooks:
+      - id: bandit
+        name: bandit
+        entry: poetry run bandit
+        language: system
+        types_or: [python]
+        exclude: tests/
+
+  - repo: local
+    hooks:
+      - id: safety
+        name: safety
+        entry: poetry run safety check
+        pass_filenames: false
+        language: system
+
+  - repo: local
+    hooks:
+      - id: flake8
+        name: flake8
+        entry: poetry run flake8
+        language: system
+        types_or: [python]

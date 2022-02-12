@@ -2,6 +2,7 @@ from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtQuick import QQuickImageProvider
 
+
 class ClipboardItemModelImageProvider(QQuickImageProvider):
     def __init__(self, model):
         QQuickImageProvider.__init__(self, QQuickImageProvider.Pixmap)

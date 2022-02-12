@@ -1,24 +1,34 @@
-from InfiniteCopy.MimeFormats import *
-
 import hashlib
 import pickle
 
-from PyQt5.QtCore import pyqtProperty, pyqtSlot, Qt, QDateTime, QByteArray, QBuffer
+from PyQt5.QtCore import (
+    QBuffer,
+    QByteArray,
+    QDateTime,
+    Qt,
+    pyqtProperty,
+    pyqtSlot,
+)
 from PyQt5.QtGui import QImage
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery, QSqlRecord, QSqlTableModel
+
+from infinitecopy.MimeFormats import *
+
 
 def createHash(data):
     hash = hashlib.md5()
 
     for format in data:
-        hash.update(format.encode('utf-8'))
-        hash.update(b';;')
+        hash.update(format.encode("utf-8"))
+        hash.update(b";;")
         hash.update(data[format])
 
     return hash.hexdigest()
 
+
 def serializeData(data):
     return pickle.dumps(data)
+
 
 def deserializeData(bytes):
     try:
@@ -28,15 +38,24 @@ def deserializeData(bytes):
     except TypeError:
         return {}
 
+
 def prepareQuery(query, queryText):
     if not query.prepare(queryText):
-        raise ValueError('Bad query template: {}\nLast error: {}'
-                .format(queryText, query.lastError().text()))
+        raise ValueError(
+            "Bad query template: {}\nLast error: {}".format(
+                queryText, query.lastError().text()
+            )
+        )
+
 
 def executeQuery(query):
     if not query.exec_():
-        raise ValueError('Failed to execute query: {}\nLast error: {}'
-                .format(query.lastQuery(), query.lastError().text()))
+        raise ValueError(
+            "Failed to execute query: {}\nLast error: {}".format(
+                query.lastQuery(), query.lastError().text()
+            )
+        )
+
 
 class ClipboardItemModel(QSqlTableModel):
     def __init__(self):
@@ -50,7 +69,8 @@ class ClipboardItemModel(QSqlTableModel):
             QSqlDatabase.database().transaction()
 
             query = QSqlQuery()
-            prepareQuery(query,
+            prepareQuery(
+                query,
                 """
                 create table clipboardItems(
                     copyTime timestamp,
@@ -58,18 +78,18 @@ class ClipboardItemModel(QSqlTableModel):
                     itemText text,
                     itemData blob
                 );
-                """)
+                """,
+            )
             executeQuery(query)
         except ValueError:
             pass
         finally:
-            QSqlDatabase.database().commit();
+            QSqlDatabase.database().commit()
 
-        self.setTable('clipboardItems')
+        self.setTable("clipboardItems")
         self.setSort(0, Qt.DescendingOrder)
         self.select()
         self.generateRoleNames()
-
 
     def addItem(self, data):
         hash = createHash(data)
@@ -79,29 +99,35 @@ class ClipboardItemModel(QSqlTableModel):
         self.lastAddedHash = hash
 
         query = QSqlQuery()
-        prepareQuery(query,
+        prepareQuery(
+            query,
             """
             delete from clipboardItems where itemHash = :hash;
-            """)
-        query.bindValue(':hash', hash)
+            """,
+        )
+        query.bindValue(":hash", hash)
         executeQuery(query)
 
-        text = data.get(mimeText, '')
+        text = data.get(mimeText, "")
 
         record = self.record()
-        record.setValue('itemHash', hash)
-        record.setValue('itemText', text)
-        record.setValue('itemData', QByteArray(serializeData(data)))
-        record.setValue('copyTime', QDateTime.currentDateTime())
+        record.setValue("itemHash", hash)
+        record.setValue("itemText", text)
+        record.setValue("itemData", QByteArray(serializeData(data)))
+        record.setValue("copyTime", QDateTime.currentDateTime())
 
         if not self.insertRecord(0, record):
-            raise ValueError('Failed to insert item: ' + self.lastError().text())
+            raise ValueError(
+                "Failed to insert item: " + self.lastError().text()
+            )
 
         self.submitChanges()
 
     def submitChanges(self):
         if not self.submitAll():
-            raise ValueError('Failed submit queries: ' + self.lastError().text())
+            raise ValueError(
+                "Failed submit queries: " + self.lastError().text()
+            )
 
     @pyqtSlot(int)
     def removeItem(self, row):
@@ -111,15 +137,17 @@ class ClipboardItemModel(QSqlTableModel):
     def generateRoleNames(self):
         self.roles = {}
         for i in range(self.columnCount()):
-            self.roles[Qt.UserRole + i + 1] = self.headerData(i, Qt.Horizontal).encode()
+            self.roles[Qt.UserRole + i + 1] = self.headerData(
+                i, Qt.Horizontal
+            ).encode()
 
         role = Qt.UserRole + self.columnCount()
         self.itemHtmlRole = role
-        self.roles[role] = b'itemHtml'
+        self.roles[role] = b"itemHtml"
         role += 1
 
         self.itemHasImage = role
-        self.roles[role] = b'hasImage'
+        self.roles[role] = b"hasImage"
         role += 1
 
     def roleNames(self):
@@ -135,11 +163,11 @@ class ClipboardItemModel(QSqlTableModel):
             column = role - Qt.UserRole - 1
             return record.value(column)
 
-        dataValue = record.value('itemData')
+        dataValue = record.value("itemData")
         data = deserializeData(dataValue)
 
         if role == self.itemHtmlRole:
-            return data.get(mimeHtml, '')
+            return data.get(mimeHtml, "")
 
         if role == self.itemHasImage:
             return mimePng in data
@@ -148,7 +176,7 @@ class ClipboardItemModel(QSqlTableModel):
 
     def imageData(self, row):
         record = self.record(row)
-        dataValue = record.value('itemData')
+        dataValue = record.value("itemData")
         data = deserializeData(dataValue)
 
         if mimePng in data:

@@ -1,0 +1,34 @@
+[tool.poetry]
+name = "infinitecopy"
+version = "0.1.0"
+description = "Simple clipboard manager"
+license = "GPL-3.0-or-later"
+authors = ["Lukas Holecek <hluk@email.cz>"]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.11"
+PyQt5 = ">=5.15.2"
+
+[tool.poetry.dev-dependencies]
+black = "^22.1.0"
+flake8 = "^4.0.1"
+isort = "^5.10.1"
+bandit = "^1.7.1"
+safety = "^1.10.3"
+Nuitka = [
+  # There are issues with Nuitka 0.6.18 on Windows. It raises FileNotFoundError
+  # in subprocess.Popen but does not show the executable path.
+  {version = "=0.6.17", markers = "platform_system == 'Windows'"},
+  {version = "^0.6.18", markers = "platform_system != 'Windows'"}
+]
+zstandard = "^0.16.0"
+imageio = [
+  {version = "^2.11.1", markers = "platform_system == 'Windows'"}
+]
+
+[tool.poetry.scripts]
+infinitecopy = "infinitecopy.__main__:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

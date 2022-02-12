@@ -4,4 +4,3 @@ Text {
     font.pointSize: 8
     color: '#888'
 }
-

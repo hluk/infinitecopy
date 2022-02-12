@@ -1,7 +1,8 @@
-from InfiniteCopy.MimeFormats import *
+from PyQt5.QtCore import QObject, QTimer, pyqtProperty, pyqtSignal
+from PyQt5.QtGui import QClipboard, QGuiApplication
 
-from PyQt5.QtCore import pyqtProperty, pyqtSignal, QObject, QTimer
-from PyQt5.QtGui import QGuiApplication, QClipboard
+from infinitecopy.MimeFormats import *
+
 
 class Clipboard(QObject):
     changed = pyqtSignal(dict)
