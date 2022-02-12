@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 import sys
 
-from PyQt5.QtCore import QDir, QSortFilterProxyModel, QStandardPaths, QUrl
+from PyQt5.QtCore import (
+    QDir,
+    QSortFilterProxyModel,
+    QStandardPaths,
+    QUrl,
+    qInfo,
+)
 from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtQml import QQmlComponent
 from PyQt5.QtQuick import QQuickView
@@ -24,7 +30,7 @@ def openDataBase():
         raise Exception("Failed to create data directory {}".format(dataPath))
 
     dbPath = dataPath + "/infinitecopy_items.sql"
-    print('Using item database "{}".'.format(dbPath))
+    qInfo('Using item database "{}".'.format(dbPath))
     db.setDatabaseName(dbPath)
     db.open()
 
