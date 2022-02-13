@@ -18,10 +18,9 @@ from PyQt5.QtGui import QGuiApplication, QIcon
 from PyQt5.QtQuick import QQuickView
 from PyQt5.QtSql import QSqlDatabase
 
-import infinitecopy.MimeFormats as formats
 from infinitecopy import __version__
 from infinitecopy.Client import Client
-from infinitecopy.Clipboard import Clipboard
+from infinitecopy.ClipboardFactory import createClipboard
 from infinitecopy.ClipboardItemModel import ClipboardItemModel, Column
 from infinitecopy.ClipboardItemModelImageProvider import (
     ClipboardItemModelImageProvider,
@@ -88,10 +87,7 @@ def main():
     filterProxyModel.setSourceModel(clipboardItemModel)
     filterProxyModel.setFilterKeyColumn(Column.TEXT)
 
-    clipboard = Clipboard()
-    clipboard.setFormats(
-        [formats.mimeText, formats.mimeHtml, formats.mimePng, formats.mimeSvg]
-    )
+    clipboard = createClipboard()
     clipboard.changed.connect(clipboardItemModel.addItem)
 
     engine = view.engine()
