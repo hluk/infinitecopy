@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 # SPDX-License-Identifier: LGPL-2.0-or-later
+import getpass
 import sys
 from pathlib import Path
 
 from PyQt5.QtCore import (
+    QCommandLineParser,
+    QCoreApplication,
     QDir,
     QSortFilterProxyModel,
     QStandardPaths,
     QUrl,
+    qCritical,
     qInfo,
 )
 from PyQt5.QtGui import QGuiApplication, QIcon
@@ -15,11 +19,14 @@ from PyQt5.QtQuick import QQuickView
 from PyQt5.QtSql import QSqlDatabase
 
 import infinitecopy.MimeFormats as formats
+from infinitecopy import __version__
+from infinitecopy.Client import Client
 from infinitecopy.Clipboard import Clipboard
 from infinitecopy.ClipboardItemModel import ClipboardItemModel, Column
 from infinitecopy.ClipboardItemModelImageProvider import (
     ClipboardItemModelImageProvider,
 )
+from infinitecopy.Server import Server
 
 
 def openDataBase():
@@ -40,6 +47,26 @@ def main():
     app = QGuiApplication(sys.argv)
     app.setApplicationName("InfiniteCopy")
     app.setApplicationDisplayName("InfiniteCopy")
+    app.setApplicationVersion(__version__)
+
+    parser = QCommandLineParser()
+    parser.setApplicationDescription(
+        QCoreApplication.translate("main", "Simple clipboard manager")
+    )
+    parser.addHelpOption()
+    parser.addVersionOption()
+    parser.process(app)
+
+    serverName = f"{app.applicationName()}_{getpass.getuser()}"
+    client = Client()
+    if client.connect(serverName):
+        client.send("show")
+        return
+
+    server = Server()
+    if not server.start(serverName):
+        qCritical(f"Failed to start app server: {server.errorString()}")
+        return
 
     path = Path(__file__).parent
     qmlPath = Path(path, "qml")
@@ -84,6 +111,13 @@ def main():
     view.show()
 
     engine.quit.connect(QGuiApplication.quit)
+
+    def show():
+        qInfo("Activating window")
+        view.hide()
+        view.show()
+
+    server.messageReceived.connect(show)
 
     return app.exec_()
 
