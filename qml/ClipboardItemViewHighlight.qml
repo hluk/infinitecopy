@@ -6,8 +6,8 @@ Rectangle {
     property ListView parentListView: undefined
 
     color: "#bdf"
-    width: parentListView.currentItem.width
-    height: parentListView.currentItem.height
-    y: parentListView.currentItem.y
+    width: parentListView.currentItem ? parentListView.currentItem.width : 0
+    height: parentListView.currentItem ? parentListView.currentItem.height : 0
+    y: parentListView.currentItem ? parentListView.currentItem.y : 0
     Behavior on y { SmoothedAnimation { duration: 100 } }
 }
