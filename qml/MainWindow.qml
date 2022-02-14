@@ -35,7 +35,7 @@ ColumnLayout {
                 shortcut: StandardKey.Copy
                 iconName: "edit-copy"
                 enabled: clipboardItemView.currentIndex >= 0
-                onTriggered: clipboard.text = clipboardItemView.currentItem.text
+                onTriggered: clipboard.setData(clipboardItemView.currentItem.dataDict)
             }
 
             // Delete item action
@@ -62,13 +62,13 @@ ColumnLayout {
         Shortcut {
             sequence: 'Enter'
             onActivated: {
-                clipboard.text = clipboardItemView.currentItem.text
+                clipboard.setData(clipboardItemView.currentItem.dataDict)
             }
         }
         Shortcut {
             sequence: 'Return'
             onActivated: {
-                clipboard.text = clipboardItemView.currentItem.text
+                clipboard.setData(clipboardItemView.currentItem.dataDict)
             }
         }
 

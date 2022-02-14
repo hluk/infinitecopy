@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
 import hashlib
-import pickle  # nosec
 
 from PyQt5.QtCore import QByteArray, QDateTime, Qt, pyqtSlot
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
 
 import infinitecopy.MimeFormats as formats
+from infinitecopy.serialize import deserializeData, serializeData
 
 
 class Column:
@@ -24,20 +24,6 @@ def createHash(data):
         hash.update(data[format])
 
     return hash.hexdigest()
-
-
-def serializeData(data):
-    return pickle.dumps(data)  # nosec
-
-
-def deserializeData(bytes):
-    try:
-        # FIXME: Avoid using unsafe pickle.
-        return pickle.loads(bytes)  # nosec
-    except EOFError:
-        return {}
-    except TypeError:
-        return {}
 
 
 def prepareQuery(query, queryText):
@@ -151,6 +137,10 @@ class ClipboardItemModel(QSqlTableModel):
         self.roles[role] = b"hasImage"
         role += 1
 
+        self.itemData = role
+        self.roles[role] = b"itemData"
+        role += 1
+
     def roleNames(self):
         return self.roles
 
@@ -172,6 +162,9 @@ class ClipboardItemModel(QSqlTableModel):
 
         if role == self.itemHasImage:
             return formats.mimePng in data
+
+        if role == self.itemData:
+            return data
 
         return None
 

@@ -8,6 +8,7 @@ Item {
     height: row.height
 
     clip: true
+    property var dataDict: itemData
     property string text: itemText
     property string html: itemHtml
 
@@ -21,7 +22,7 @@ Item {
     MouseArea {
         anchors.fill: parent
         onClicked: currentIndex = index
-        onDoubleClicked: clipboard.text = text
+        onDoubleClicked: clipboard.setData(dataDict)
     }
 
     Row {

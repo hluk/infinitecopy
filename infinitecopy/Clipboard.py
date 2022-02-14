@@ -1,6 +1,14 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
-from PyQt5.QtCore import QObject, QTimer, pyqtProperty, pyqtSignal
+from PyQt5.QtCore import (
+    QMimeData,
+    QObject,
+    QTimer,
+    pyqtProperty,
+    pyqtSignal,
+    pyqtSlot,
+)
 from PyQt5.QtGui import QClipboard, QGuiApplication
+from PyQt5.QtQml import QJSValue
 
 
 class Clipboard(QObject):
@@ -59,3 +67,12 @@ class Clipboard(QObject):
     def text(self, text):
         clipboard = QGuiApplication.clipboard()
         return clipboard.setText(text)
+
+    @pyqtSlot(QJSValue)
+    def setData(self, value):
+        data = value.toVariant()
+        mimeData = QMimeData()
+        for format_, bytes_ in data.items():
+            mimeData.setData(format_, bytes_)
+        clipboard = QGuiApplication.clipboard()
+        clipboard.setMimeData(mimeData)

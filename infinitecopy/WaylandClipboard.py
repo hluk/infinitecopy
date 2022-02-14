@@ -9,9 +9,11 @@ from PyQt5.QtCore import (
     QTimer,
     pyqtProperty,
     pyqtSignal,
+    pyqtSlot,
     qCritical,
     qWarning,
 )
+from PyQt5.QtQml import QJSValue
 
 import infinitecopy.MimeFormats as formats
 
@@ -99,20 +101,14 @@ def clipboardData(format_, args):
     return process.output()
 
 
-def setClipboardData(format_, data):
-    process = QProcess()
+def setClipboardData(format_, bytes_):
+    process = ClipboardSetterProcess(["--type", format_], bytes_)
+    return process.waitForFinished()
 
-    def readErrorOutput():
-        err = process.readAllErrorOutput()
-        qWarning(f"wl-copy: {err}")
 
-    process.readyReadStandardError.connect(readErrorOutput)
-
-    process.closeReadChannel(QProcess.StandardOutput)
-    process.start("wl-copy", ["--type", format_], QIODevice.ReadWrite)
-    process.write(data)
-    process.closeWriteChannel()
-    return waitForFinished(process)
+def clearClipboardData():
+    process = ClipboardSetterProcess(["--clear"])
+    return process.waitForFinished()
 
 
 class ClipboardDataProcess:
@@ -151,6 +147,35 @@ class ClipboardDataProcess:
             return self.out.left(self.out.size() - 1)
 
         return self.out
+
+
+class ClipboardSetterProcess:
+    def __init__(self, args, bytes_=None):
+        self.process = QProcess()
+
+        self.process.readyReadStandardError.connect(self.readErrorOutput)
+        self.process.closeReadChannel(QProcess.StandardOutput)
+
+        self.process.start("wl-copy", args, QIODevice.ReadWrite)
+
+        if not self.process.waitForStarted(PROCESS_START_TIMEOUT_MS):
+            qCritical(
+                "Failed to set clipboard with wl-copy: "
+                f"{self.process.errorString()}"
+            )
+        else:
+            if bytes_:
+                self.process.write(bytes_)
+            self.process.closeWriteChannel()
+
+    def readErrorOutput(self):
+        err = (
+            bytes(self.process.readAllStandardError()).decode("utf-8").strip()
+        )
+        qWarning(f"wl-copy: {err}")
+
+    def waitForFinished(self):
+        return waitForFinished(self.process)
 
 
 class WaylandClipboard(QObject):
@@ -209,6 +234,7 @@ class WaylandClipboard(QObject):
             (format_, ClipboardDataProcess(format_, args))
             for format_ in self.formats
         ]
+
         for format_, process in processes:
             bytes_ = process.output()
             if not bytes_.isEmpty():
@@ -226,3 +252,14 @@ class WaylandClipboard(QObject):
         return setClipboardData(OWN_FORMAT, b"1") and setClipboardData(
             formats.mimeText, text.encode("utf-8")
         )
+
+    @pyqtSlot(QJSValue)
+    def setData(self, value):
+        clearClipboardData()
+        data = value.toVariant()
+        processes = [
+            ClipboardSetterProcess(["--type", format_], bytes_)
+            for format_, bytes_ in data.items()
+        ]
+        for process in processes:
+            process.waitForFinished()
