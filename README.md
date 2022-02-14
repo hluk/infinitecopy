@@ -1,6 +1,4 @@
-InfiniteCopy is clipboard manager designed to run both desktop and mobile devices.
-
-The application is in early stage of development.
+InfiniteCopy is simple cross-platform clipboard manager.
 
 # Install and Run
 
@@ -15,7 +13,7 @@ run](https://github.com/hluk/infinitecopy/actions?query=is%3Asuccess).
 
 The application requires to run recent enough versions of the following applications.
 
-- Python3
+- Python
 - PyQt5
 - Qt Quick 5 libraries
 
@@ -34,7 +32,7 @@ python3 infinitecopy.py
 Clone repository and **start** the app with:
 
     poetry install
-    poetry run xitomatl
+    poetry run infinitecopy
 
 Install **pre-commit** for local repository clone:
 
