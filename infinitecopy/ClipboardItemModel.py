@@ -79,6 +79,10 @@ class ClipboardItemModel(QSqlTableModel):
         self.generateRoleNames()
 
     def addItem(self, data):
+        # Ignore empty data.
+        if all(d.trimmed().length() == 0 for d in data.values()):
+            return
+
         hash = createHash(data)
         if self.lastAddedHash == hash:
             return
@@ -95,7 +99,7 @@ class ClipboardItemModel(QSqlTableModel):
         query.bindValue(":hash", hash)
         executeQuery(query)
 
-        text = data.get(formats.mimeText, "")
+        text = data.get(formats.mimeText, QByteArray())
 
         record = self.record()
         record.setValue("itemHash", hash)
