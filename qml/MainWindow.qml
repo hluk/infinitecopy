@@ -4,10 +4,14 @@ import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.3
 
 ColumnLayout {
+    Accessible.name: "infinitecopy main window"
+
     anchors.fill: parent
 
     FilterTextField {
         id: filterTextField
+
+        Accessible.description: "filter items text field"
 
         Layout.fillWidth: true
         model: clipboardItemView.model
@@ -18,6 +22,8 @@ ColumnLayout {
 
     ClipboardItemView {
         id: clipboardItemView
+
+        Accessible.name: "item list"
 
         Layout.fillHeight: true
         Layout.fillWidth: true

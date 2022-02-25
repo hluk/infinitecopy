@@ -12,6 +12,10 @@ Item {
     property string text: itemText
     property string html: itemHtml
 
+    Accessible.focused: index == row.id
+    Accessible.name: `row ${index + 1}`
+    Accessible.description: text ? `text: ${text}` : (hasImage ? "image" : "")
+
     Rectangle {
         anchors.fill: parent
         color: index % 2 ? 'black' : 'transparent'
