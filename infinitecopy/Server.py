@@ -20,5 +20,9 @@ class Server(QObject):
         if not socket:
             return
 
-        message = bytes(socket.readAll()).decode("utf-8")
-        self.messageReceived.emit(message)
+        def on_ready_read():
+            message = bytes(socket.readAll()).decode("utf-8")
+            self.messageReceived.emit(message)
+
+        socket.readyRead.connect(on_ready_read)
+        socket.waitForDisconnected()

@@ -14,3 +14,4 @@ class Client:
 
     def send(self, message):
         self.socket.write(message.encode("utf-8"))
+        self.socket.flush()

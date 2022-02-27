@@ -13,6 +13,7 @@ from PyQt5.QtCore import (
     QUrl,
     qCritical,
     qInfo,
+    qWarning,
 )
 from PyQt5.QtGui import QGuiApplication, QIcon
 from PyQt5.QtQuick import QQuickView
@@ -137,12 +138,15 @@ def main():
 
     engine.quit.connect(QGuiApplication.quit)
 
-    def show():
-        qInfo("Activating window")
-        view.hide()
-        view.show()
+    def on_message(message):
+        if message == "show":
+            qInfo("Activating window")
+            view.hide()
+            view.show()
+        else:
+            qWarning(f"Unknown message received: {message}")
 
-    server.messageReceived.connect(show)
+    server.messageReceived.connect(on_message)
 
     return app.exec_()
 
