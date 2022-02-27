@@ -68,13 +68,31 @@ ColumnLayout {
         Shortcut {
             sequence: 'Enter'
             onActivated: {
+                view.hide()
                 clipboard.setData(clipboardItemView.currentItem.dataDict)
             }
         }
         Shortcut {
             sequence: 'Return'
             onActivated: {
+                view.hide()
                 clipboard.setData(clipboardItemView.currentItem.dataDict)
+            }
+        }
+
+        // Paste text
+        Shortcut {
+            sequence: 'Shift+Enter'
+            onActivated: {
+                if (paster)
+                    paster.paste(clipboardItemView.currentItem.text)
+            }
+        }
+        Shortcut {
+            sequence: 'Shift+Return'
+            onActivated: {
+                if (paster)
+                    paster.paste(clipboardItemView.currentItem.text)
             }
         }
 

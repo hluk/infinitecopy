@@ -9,6 +9,9 @@ include = ["infinitecopy.png", "qml/*"]
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
 PyQt5 = ">=5.15.2"
+PyGObject = [
+  {version = "^3.42.0", markers = "platform_system == 'Linux'"}
+]
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"

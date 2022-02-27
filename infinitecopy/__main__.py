@@ -42,6 +42,16 @@ def openDataBase():
     db.open()
 
 
+def pasterIfAvailable(view):
+    try:
+        from infinitecopy.Paster import Paster
+    except (ImportError, ValueError) as e:
+        qInfo(f"Pasting won't work: {e}")
+        return None
+
+    return Paster(view)
+
+
 def main():
     app = QGuiApplication(sys.argv)
     app.setApplicationName("InfiniteCopy")
@@ -101,6 +111,10 @@ def main():
         "clipboardItemModelFilterProxy", filterProxyModel
     )
     context.setContextProperty("clipboard", clipboard)
+    context.setContextProperty("view", view)
+
+    paster = pasterIfAvailable(view)
+    context.setContextProperty("paster", paster)
 
     view.setSource(QUrl.fromLocalFile(str(Path(qmlPath, "MainWindow.qml"))))
     view.setGeometry(100, 100, 400, 240)
