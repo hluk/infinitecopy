@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # SPDX-License-Identifier: LGPL-2.0-or-later
+import argparse
 import getpass
 import sys
 from pathlib import Path
 
 from PyQt5.QtCore import (
-    QCommandLineParser,
     QCoreApplication,
     QDir,
     QSortFilterProxyModel,
@@ -26,6 +26,8 @@ from infinitecopy.ClipboardItemModelImageProvider import (
     ClipboardItemModelImageProvider,
 )
 from infinitecopy.Server import Server
+
+APPLICATION_NAME = "InfiniteCopy"
 
 
 def openDataBase():
@@ -52,25 +54,38 @@ def pasterIfAvailable(view):
     return Paster(view)
 
 
-def main():
-    app = QGuiApplication(sys.argv)
-    app.setApplicationName("InfiniteCopy")
-    app.setApplicationDisplayName("InfiniteCopy")
-    app.setApplicationVersion(__version__)
-
-    parser = QCommandLineParser()
-    parser.setApplicationDescription(
-        QCoreApplication.translate("main", "Simple clipboard manager")
+def parse_argumments(args=None):
+    parser = argparse.ArgumentParser(
+        description=QCoreApplication.translate(
+            "main", "Simple clipboard manager"
+        )
     )
-    parser.addHelpOption()
-    parser.addVersionOption()
-    parser.process(app)
+    parser.add_argument(
+        QCoreApplication.translate("main", "commands"),
+        nargs="*",
+        help=QCoreApplication.translate(
+            "main", "Commands to send to the application"
+        ),
+    )
+    return parser.parse_args(args)
 
-    serverName = f"{app.applicationName()}_{getpass.getuser()}"
+
+def main():
+    args = parse_argumments()
+
+    serverName = f"{APPLICATION_NAME}_{getpass.getuser()}"
     client = Client()
     if client.connect(serverName):
-        client.send("show")
+        client.send(" ".join(args.commands) or "show")
         return
+
+    if args.commands:
+        raise SystemExit("Start the application before using a command")
+
+    app = QGuiApplication(sys.argv)
+    app.setApplicationName(APPLICATION_NAME)
+    app.setApplicationDisplayName(APPLICATION_NAME)
+    app.setApplicationVersion(__version__)
 
     server = Server()
     if not server.start(serverName):
