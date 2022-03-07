@@ -23,12 +23,13 @@ Nuitka = [
   # There are issues with Nuitka 0.6.18 on Windows. It raises FileNotFoundError
   # in subprocess.Popen but does not show the executable path.
   {version = "=0.6.17", markers = "platform_system == 'Windows'"},
-  {version = "^0.6.18", markers = "platform_system != 'Windows'"}
+  {version = "^0.6.19", markers = "platform_system != 'Windows'"}
 ]
 zstandard = "^0.16.0"
 imageio = [
   {version = "^2.11.1", markers = "platform_system == 'Windows'"}
 ]
+pillow = ">=9.0.0"
 
 [tool.poetry.scripts]
 infinitecopy = "infinitecopy.__main__:main"
