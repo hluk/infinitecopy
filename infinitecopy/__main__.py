@@ -5,61 +5,25 @@ import getpass
 import sys
 from pathlib import Path
 
-from PyQt5.QtCore import (
-    QCoreApplication,
-    QDir,
-    QSortFilterProxyModel,
-    QStandardPaths,
-    QUrl,
-    qCritical,
-    qInfo,
-    qWarning,
-)
-from PyQt5.QtGui import QGuiApplication, QIcon
-from PyQt5.QtQuick import QQuickView
-from PyQt5.QtSql import QSqlDatabase
+from PyQt5.QtCore import QCoreApplication, QDir, QStandardPaths, qInfo
 
 from infinitecopy import __version__
+from infinitecopy.Application import Application, ApplicationError
 from infinitecopy.Client import Client
-from infinitecopy.ClipboardFactory import createClipboard
-from infinitecopy.ClipboardItemModel import ClipboardItemModel, Column
-from infinitecopy.ClipboardItemModelImageProvider import (
-    ClipboardItemModelImageProvider,
-)
-from infinitecopy.Server import Server
 
 APPLICATION_NAME = "InfiniteCopy"
 
 
-def openDataBase():
-    db = QSqlDatabase.addDatabase("QSQLITE")
-    dataPath = QStandardPaths.writableLocation(
-        QStandardPaths.AppLocalDataLocation
-    )
-    if not QDir(dataPath).mkpath("."):
-        raise Exception(f"Failed to create data directory {dataPath}")
-
-    dbPath = Path(dataPath, "infinitecopy_items.sql")
-    qInfo(f'Using item database "{dbPath}"')
-    db.setDatabaseName(str(dbPath))
-    db.open()
-
-
-def pasterIfAvailable(view):
-    try:
-        from infinitecopy.Paster import Paster
-    except (ImportError, ValueError) as e:
-        qInfo(f"Pasting won't work: {e}")
-        return None
-
-    return Paster(view)
-
-
-def parse_argumments(args=None):
+def parseArguments(args=None):
     parser = argparse.ArgumentParser(
         description=QCoreApplication.translate(
             "main", "Simple clipboard manager"
         )
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"{APPLICATION_NAME} {__version__}",
     )
     parser.add_argument(
         QCoreApplication.translate("main", "commands"),
@@ -71,28 +35,19 @@ def parse_argumments(args=None):
     return parser.parse_args(args)
 
 
-def main():
-    args = parse_argumments()
+def createDbPath():
+    dataPath = QStandardPaths.writableLocation(
+        QStandardPaths.AppLocalDataLocation
+    )
+    if not QDir(dataPath).mkpath("."):
+        raise SystemExit(f"Failed to create data directory {dataPath}")
 
-    serverName = f"{APPLICATION_NAME}_{getpass.getuser()}"
-    client = Client()
-    if client.connect(serverName):
-        client.send(" ".join(args.commands) or "show")
-        return
+    dbPath = Path(dataPath, "infinitecopy_items.sql")
+    qInfo(f'Using item database "{dbPath}"')
+    return str(dbPath)
 
-    if args.commands:
-        raise SystemExit("Start the application before using a command")
 
-    app = QGuiApplication(sys.argv)
-    app.setApplicationName(APPLICATION_NAME)
-    app.setApplicationDisplayName(APPLICATION_NAME)
-    app.setApplicationVersion(__version__)
-
-    server = Server()
-    if not server.start(serverName):
-        qCritical(f"Failed to start app server: {server.errorString()}")
-        return
-
+def setUpPaths(app):
     path = Path(__file__).parent
     qmlPath = Path(path, "qml")
     if not qmlPath.exists():
@@ -100,53 +55,40 @@ def main():
         qmlPath = Path(path, "qml")
 
     iconPath = Path(path, "infinitecopy.png")
-    app.setWindowIcon(QIcon(str(iconPath)))
+    app.setIcon(str(iconPath))
 
-    openDataBase()
+    qml = str(Path(qmlPath, "MainWindow.qml"))
+    app.setMainWindowQml(qml)
 
-    view = QQuickView()
 
-    clipboardItemModel = ClipboardItemModel()
-    clipboardItemModel.create()
+def handleClient(serverName, args):
+    client = Client()
+    if not client.connect(serverName):
+        if args.commands:
+            raise SystemExit("Start the application before using a command")
+        return False
 
-    filterProxyModel = QSortFilterProxyModel()
-    filterProxyModel.setSourceModel(clipboardItemModel)
-    filterProxyModel.setFilterKeyColumn(Column.TEXT)
+    client.send(" ".join(args.commands) or "show")
+    return True
 
-    clipboard = createClipboard()
-    clipboard.changed.connect(clipboardItemModel.addItem)
 
-    engine = view.engine()
+def main():
+    serverName = f"{APPLICATION_NAME}_{getpass.getuser()}"
+    if handleClient(serverName, parseArguments()):
+        return
 
-    imageProvider = ClipboardItemModelImageProvider(clipboardItemModel)
-    engine.addImageProvider("items", imageProvider)
+    try:
+        app = Application(
+            name=APPLICATION_NAME,
+            version=__version__,
+            dbPath=createDbPath(),
+            serverName=serverName,
+            args=sys.argv,
+        )
+    except ApplicationError as e:
+        raise SystemExit(f"Failed to start app: {e}")
 
-    context = view.rootContext()
-    context.setContextProperty("clipboardItemModel", clipboardItemModel)
-    context.setContextProperty(
-        "clipboardItemModelFilterProxy", filterProxyModel
-    )
-    context.setContextProperty("clipboard", clipboard)
-    context.setContextProperty("view", view)
-
-    paster = pasterIfAvailable(view)
-    context.setContextProperty("paster", paster)
-
-    view.setSource(QUrl.fromLocalFile(str(Path(qmlPath, "MainWindow.qml"))))
-    view.setGeometry(100, 100, 400, 240)
-    view.show()
-
-    engine.quit.connect(QGuiApplication.quit)
-
-    def on_message(message):
-        if message == "show":
-            qInfo("Activating window")
-            view.hide()
-            view.show()
-        else:
-            qWarning(f"Unknown message received: {message}")
-
-    server.messageReceived.connect(on_message)
+    setUpPaths(app)
 
     return app.exec_()
 
