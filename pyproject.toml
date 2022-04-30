@@ -30,6 +30,8 @@ imageio = [
   {version = "^2.11.1", markers = "platform_system == 'Windows'"}
 ]
 pillow = ">=9.0.0"
+pyright = "^1.1.241"
+pylint = "^2.13.7"
 
 [tool.poetry.scripts]
 infinitecopy = "infinitecopy.__main__:main"
@@ -37,3 +39,8 @@ infinitecopy = "infinitecopy.__main__:main"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = [
+    "invalid-name",
+]

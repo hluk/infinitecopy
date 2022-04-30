@@ -7,6 +7,20 @@ from PyQt5.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
 import infinitecopy.MimeFormats as formats
 from infinitecopy.serialize import deserializeData, serializeData
 
+SQL_CREATE_TABLE_ITEM = """
+CREATE TABLE IF NOT EXISTS item (
+    copyTime TIMESTAMP NOT NULL,
+    itemHash TEXT NOT NULL UNIQUE ON CONFLICT REPLACE,
+    itemText TEXT NOT NULL,
+    itemData BLOB
+);
+"""
+
+SQL_CREATE_DB = [
+    SQL_CREATE_TABLE_ITEM,
+    "CREATE INDEX IF NOT EXISTS index_item_text ON item (itemText);",
+]
+
 
 class Column:
     TIMESTAMP = 0
@@ -48,33 +62,20 @@ class ClipboardItemModel(QSqlTableModel):
     def __init__(self):
         QSqlTableModel.__init__(self)
         self.roles = {}
-        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.setEditStrategy(QSqlTableModel.EditStrategy.OnManualSubmit)
         self.lastAddedHash = ""
 
     def create(self):
-        try:
-            QSqlDatabase.database().transaction()
+        QSqlDatabase.database().transaction()
 
-            query = QSqlQuery()
-            prepareQuery(
-                query,
-                """
-                create table clipboardItems(
-                    copyTime timestamp,
-                    itemHash text,
-                    itemText text,
-                    itemData blob
-                );
-                """,
-            )
+        query = QSqlQuery()
+        for statement in SQL_CREATE_DB:
+            prepareQuery(query, statement)
             executeQuery(query)
-        except ValueError:
-            pass
-        finally:
-            QSqlDatabase.database().commit()
+        QSqlDatabase.database().commit()
 
-        self.setTable("clipboardItems")
-        self.setSort(0, Qt.DescendingOrder)
+        self.setTable("item")
+        self.setSort(0, Qt.SortOrder.DescendingOrder)
         self.select()
         self.generateRoleNames()
 
@@ -88,16 +89,6 @@ class ClipboardItemModel(QSqlTableModel):
             return
 
         self.lastAddedHash = hash
-
-        query = QSqlQuery()
-        prepareQuery(
-            query,
-            """
-            delete from clipboardItems where itemHash = :hash;
-            """,
-        )
-        query.bindValue(":hash", hash)
-        executeQuery(query)
 
         text = data.get(formats.mimeText, QByteArray())
 
@@ -128,20 +119,20 @@ class ClipboardItemModel(QSqlTableModel):
     def generateRoleNames(self):
         self.roles = {}
         for i in range(self.columnCount()):
-            self.roles[Qt.UserRole + i + 1] = self.headerData(
-                i, Qt.Horizontal
+            self.roles[Qt.ItemDataRole.UserRole + i + 1] = self.headerData(
+                i, Qt.Orientation.Horizontal
             ).encode()
 
-        role = Qt.UserRole + self.columnCount()
+        role = Qt.ItemDataRole.UserRole + self.columnCount()
         self.itemHtmlRole = role
         self.roles[role] = b"itemHtml"
         role += 1
 
-        self.itemHasImage = role
+        self.itemHasImageRole = role
         self.roles[role] = b"hasImage"
         role += 1
 
-        self.itemData = role
+        self.itemDataRole = role
         self.roles[role] = b"itemData"
         role += 1
 
@@ -149,13 +140,13 @@ class ClipboardItemModel(QSqlTableModel):
         return self.roles
 
     def data(self, index, role):
-        if role < Qt.UserRole:
+        if role < Qt.ItemDataRole.UserRole:
             return QSqlTableModel.data(self, index, role)
 
         record = self.record(index.row())
 
-        if role < Qt.UserRole + self.columnCount():
-            column = role - Qt.UserRole - 1
+        if role < Qt.ItemDataRole.UserRole + self.columnCount():
+            column = role - Qt.ItemDataRole.UserRole - 1
             return record.value(column)
 
         dataValue = record.value("itemData")
@@ -164,10 +155,10 @@ class ClipboardItemModel(QSqlTableModel):
         if role == self.itemHtmlRole:
             return data.get(formats.mimeHtml, "")
 
-        if role == self.itemHasImage:
+        if role == self.itemHasImageRole:
             return formats.mimePng in data
 
-        if role == self.itemData:
+        if role == self.itemDataRole:
             return data
 
         return None
