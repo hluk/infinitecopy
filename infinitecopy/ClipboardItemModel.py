@@ -85,7 +85,7 @@ class ClipboardItemModel(QSqlTableModel):
         if all(d.trimmed().length() == 0 for d in data.values()):
             return
 
-        if self.addItem(data):
+        if self.addItemNoCommit(data):
             self.submitChanges()
 
     def addItemNoCommit(self, data):
