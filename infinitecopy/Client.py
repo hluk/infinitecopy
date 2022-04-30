@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
 from PyQt5.QtNetwork import QLocalSocket
 
+from infinitecopy.serialize import serializeData
+
 CONNECTION_TIMEOUT_MS = 4000
 
 
@@ -12,6 +14,6 @@ class Client:
         self.socket.connectToServer(serverName)
         return self.socket.waitForConnected(CONNECTION_TIMEOUT_MS)
 
-    def send(self, message):
-        self.socket.write(message.encode("utf-8"))
+    def send(self, commands):
+        self.socket.write(serializeData(commands))
         self.socket.flush()

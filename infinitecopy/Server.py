@@ -2,9 +2,11 @@
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtNetwork import QLocalServer
 
+from infinitecopy.serialize import deserializeData
+
 
 class Server(QObject):
-    messageReceived = pyqtSignal(str)
+    messageReceived = pyqtSignal(list)
 
     def __init__(self):
         super().__init__()
@@ -21,8 +23,8 @@ class Server(QObject):
             return
 
         def on_ready_read():
-            message = bytes(socket.readAll()).decode("utf-8")
-            self.messageReceived.emit(message)
+            commands = deserializeData(socket.readAll())
+            self.messageReceived.emit(commands)
 
         socket.readyRead.connect(on_ready_read)
         socket.waitForDisconnected()

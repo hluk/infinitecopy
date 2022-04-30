@@ -68,7 +68,7 @@ def handleClient(serverName, args):
             raise SystemExit("Start the application before using a command")
         return False
 
-    client.send(" ".join(args.commands) or "show")
+    client.send(args.commands or ["show"])
     return True
 
 

@@ -2,7 +2,7 @@
 import hashlib
 
 from PyQt5.QtCore import QByteArray, QDateTime, Qt, pyqtSlot
-from PyQt5.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
+from PyQt5.QtSql import QSqlQuery, QSqlTableModel
 
 import infinitecopy.MimeFormats as formats
 from infinitecopy.serialize import deserializeData, serializeData
@@ -66,27 +66,32 @@ class ClipboardItemModel(QSqlTableModel):
         self.lastAddedHash = ""
 
     def create(self):
-        QSqlDatabase.database().transaction()
+        self.database().transaction()
 
         query = QSqlQuery()
         for statement in SQL_CREATE_DB:
             prepareQuery(query, statement)
             executeQuery(query)
-        QSqlDatabase.database().commit()
+
+        self.database().commit()
 
         self.setTable("item")
         self.setSort(0, Qt.SortOrder.DescendingOrder)
         self.select()
         self.generateRoleNames()
 
-    def addItem(self, data):
+    def addItemNoEmpty(self, data):
         # Ignore empty data.
         if all(d.trimmed().length() == 0 for d in data.values()):
             return
 
+        if self.addItem(data):
+            self.submitChanges()
+
+    def addItemNoCommit(self, data):
         hash = createHash(data)
         if self.lastAddedHash == hash:
-            return
+            return False
 
         self.lastAddedHash = hash
 
@@ -103,7 +108,7 @@ class ClipboardItemModel(QSqlTableModel):
                 "Failed to insert item: " + self.lastError().text()
             )
 
-        self.submitChanges()
+        return True
 
     def submitChanges(self):
         if not self.submitAll():
@@ -111,10 +116,19 @@ class ClipboardItemModel(QSqlTableModel):
                 "Failed submit queries: " + self.lastError().text()
             )
 
+    def beginTransaction(self):
+        self.database().transaction()
+
+    def endTransaction(self):
+        if not self.database().commit():
+            raise ValueError(
+                "Failed submit queries: " + self.lastError().text()
+            )
+
     @pyqtSlot(int)
     def removeItem(self, row):
+        self.beginTransaction()
         self.removeRow(row)
-        self.submitChanges()
 
     def generateRoleNames(self):
         self.roles = {}

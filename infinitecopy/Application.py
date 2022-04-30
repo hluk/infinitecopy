@@ -1,9 +1,16 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
-from PyQt5.QtCore import QSortFilterProxyModel, QUrl, qInfo, qWarning
+from PyQt5.QtCore import (
+    QByteArray,
+    QSortFilterProxyModel,
+    QUrl,
+    qInfo,
+    qWarning,
+)
 from PyQt5.QtGui import QGuiApplication, QIcon
 from PyQt5.QtQuick import QQuickView
 from PyQt5.QtSql import QSqlDatabase
 
+import infinitecopy.MimeFormats as formats
 from infinitecopy.ClipboardFactory import createClipboard
 from infinitecopy.ClipboardItemModel import ClipboardItemModel, Column
 from infinitecopy.ClipboardItemModelImageProvider import (
@@ -51,7 +58,7 @@ class Application:
         self.filterProxyModel.setFilterKeyColumn(Column.TEXT)
 
         self.clipboard = createClipboard()
-        self.clipboard.changed.connect(self.clipboardItemModel.addItem)
+        self.clipboard.changed.connect(self.clipboardItemModel.addItemNoEmpty)
 
         self.engine = self.view.engine()
 
@@ -88,10 +95,17 @@ class Application:
         self.view.show()
         return self.app.exec_()
 
-    def _on_message(self, message):
-        if message == "show":
+    def _on_message(self, commands):
+        if commands == ["show"]:
             qInfo("Activating window")
             self.view.hide()
             self.view.show()
+        elif commands[0] == "add":
+            self.clipboardItemModel.beginTransaction()
+            for text in commands[1:]:
+                self.clipboardItemModel.addItemNoCommit(
+                    {formats.mimeText: QByteArray(text.encode("utf-8"))}
+                )
+            self.clipboardItemModel.endTransaction()
         else:
-            qWarning(f"Unknown message received: {message}")
+            qWarning(f"Unknown message received: {commands}")
