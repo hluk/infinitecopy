@@ -142,6 +142,43 @@ ColumnLayout {
                 }
             }
         }
+
+        Shortcut {
+            sequence: 'PgDown'
+            onActivated: {
+                if (clipboardItemView.count > 0) {
+                    const y = clipboardItemView.contentY + clipboardItemView.height
+                    var index = clipboardItemView.indexAt(0, y)
+                    if (index == -1) {
+                        index = clipboardItemView.indexAt(0, y + clipboardItemView.spacing)
+                        if (index == -1) {
+                            index = clipboardItemView.count - 1
+                        }
+                    }
+                    clipboardItemView.currentIndex = index
+                    clipboardItemView.positionViewAtIndex(index, ListView.Beginning)
+                }
+            }
+        }
+
+        Shortcut {
+            sequence: 'PgUp'
+            onActivated: {
+                if (clipboardItemView.count > 0) {
+                    const y = clipboardItemView.contentY
+                    var index = clipboardItemView.indexAt(0, y)
+                    if (index == -1) {
+                        index = clipboardItemView.indexAt(0, y - clipboardItemView.spacing)
+                        if (index == -1) {
+                            index = clipboardItemView.count - 1
+                        }
+                    }
+                    clipboardItemView.currentIndex = index
+                    clipboardItemView.positionViewAtIndex(index, ListView.End)
+                }
+            }
+        }
+
         Shortcut {
             sequence: 'Escape'
             onActivated: {
