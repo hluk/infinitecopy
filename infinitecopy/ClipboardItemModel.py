@@ -5,22 +5,50 @@ from PySide6.QtCore import QByteArray, QDateTime, Qt, Slot
 from PySide6.QtSql import QSqlQuery, QSqlTableModel
 
 import infinitecopy.MimeFormats as formats
-from infinitecopy.serialize import deserializeData, serializeData
 
 COLUMN_TEXT = 2
 SQL_CREATE_TABLE_ITEM = """
 CREATE TABLE IF NOT EXISTS item (
     copyTime TIMESTAMP NOT NULL,
-    itemHash TEXT NOT NULL UNIQUE ON CONFLICT REPLACE,
-    itemText TEXT NOT NULL,
-    itemData BLOB
+    itemHash TEXT PRIMARY KEY ON CONFLICT REPLACE,
+    itemText TEXT
+) WITHOUT ROWID;
+"""
+
+SQL_CREATE_TABLE_DATA = """
+CREATE TABLE IF NOT EXISTS data (
+    itemHash TEXT NOT NULL,
+    format TEXT NOT NULL,
+    bytes BLOB NOT NULL,
+    FOREIGN KEY(itemHash) REFERENCES item(itemHash)
+        ON DELETE CASCADE
 );
 """
 
 SQL_CREATE_DB = [
+    "PRAGMA foreign_keys = ON;",
     SQL_CREATE_TABLE_ITEM,
+    SQL_CREATE_TABLE_DATA,
     "CREATE INDEX IF NOT EXISTS index_item_text ON item (itemText);",
+    "CREATE INDEX IF NOT EXISTS index_data_itemHash ON data (itemHash);",
 ]
+
+SQL_SELECT_DATA = (
+    "SELECT bytes FROM data WHERE itemHash = :itemHash AND format = :format;"
+)
+
+SQL_SELECT_FORMAT_AND_DATA = (
+    "SELECT format, bytes FROM data WHERE itemHash = :itemHash;"
+)
+
+SQL_SELECT_HAS_IMAGE = (
+    "SELECT 1 FROM data WHERE itemHash = :itemHash AND format = :format;"
+)
+
+SQL_INSERT_DATA = (
+    "INSERT INTO data (itemHash, format, bytes)"
+    " VALUES (:itemHash, :format, :bytes);"
+)
 
 
 def createHash(data):
@@ -53,22 +81,22 @@ def executeQuery(query):
 
 
 class ClipboardItemModel(QSqlTableModel):
-    def __init__(self):
-        QSqlTableModel.__init__(self)
+    def __init__(self, db):
+        QSqlTableModel.__init__(self, db=db)
         self.roles = {}
         self.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.lastAddedHash = ""
         self.generateRoleNames()
 
     def create(self):
-        self.database().transaction()
+        self.beginTransaction()
 
-        query = QSqlQuery()
+        query = QSqlQuery(self.database())
         for statement in SQL_CREATE_DB:
             prepareQuery(query, statement)
             executeQuery(query)
 
-        self.database().commit()
+        self.endTransaction()
 
         self.setTable("item")
         self.setSort(0, Qt.DescendingOrder)
@@ -79,8 +107,10 @@ class ClipboardItemModel(QSqlTableModel):
         if all(d.trimmed().length() == 0 for d in data.values()):
             return
 
-        if self.addItemNoCommit(data):
-            self.submitChanges()
+        self.beginTransaction()
+        self.addItemNoCommit(data)
+        self.endTransaction()
+        self.submitChanges()
 
     def addItemNoCommit(self, data):
         itemHash = createHash(data)
@@ -94,20 +124,39 @@ class ClipboardItemModel(QSqlTableModel):
         record = self.record()
         record.setValue("itemHash", itemHash)
         record.setValue("itemText", text)
-        record.setValue("itemData", QByteArray(serializeData(data)))
         record.setValue("copyTime", QDateTime.currentDateTime())
 
         if not self.insertRecord(0, record):
             raise ValueError(
-                "Failed to insert item: " + self.lastError().text()
+                f"Failed to insert item: {self.lastError().text()}"
             )
+
+        for format_, bytes_ in data.items():
+            if format_ == formats.mimeText:
+                continue
+
+            query = QSqlQuery(self.database())
+            prepareQuery(query, SQL_INSERT_DATA)
+            query.bindValue(":itemHash", itemHash)
+            query.bindValue(":format", format_)
+            query.bindValue(":bytes", bytes_)
+            executeQuery(query)
 
         return True
 
     def submitChanges(self):
         if not self.submitAll():
             raise ValueError(
-                "Failed submit queries: " + self.lastError().text()
+                f"Failed submit queries: {self.lastError().text()}"
+            )
+
+    def beginTransaction(self):
+        self.database().transaction()
+
+    def endTransaction(self):
+        if not self.database().commit():
+            raise ValueError(
+                f"Failed submit queries: {self.lastError().text()}"
             )
 
     @Slot(int)
@@ -154,26 +203,43 @@ class ClipboardItemModel(QSqlTableModel):
         if role == self.itemTextRole:
             return record.value("itemText")
 
-        dataValue = record.value("itemData")
-        data = deserializeData(dataValue)
-
         if role == self.itemHtmlRole:
-            return data.get(formats.mimeHtml, "")
+            query = QSqlQuery(self.database())
+            prepareQuery(query, SQL_SELECT_DATA)
+            query.bindValue(":itemHash", record.value("itemHash"))
+            query.bindValue(":format", formats.mimeHtml)
+            executeQuery(query)
+            if query.next():
+                return query.value("bytes")
+            return ""
 
         if role == self.itemHasImageRole:
-            return formats.mimePng in data
+            query = QSqlQuery(self.database())
+            prepareQuery(query, SQL_SELECT_HAS_IMAGE)
+            query.bindValue(":itemHash", record.value("itemHash"))
+            query.bindValue(":format", formats.mimePng)
+            executeQuery(query)
+            return query.next()
 
         if role == self.itemDataRole:
+            query = QSqlQuery(self.database())
+            prepareQuery(query, SQL_SELECT_FORMAT_AND_DATA)
+            query.bindValue(":itemHash", record.value("itemHash"))
+            executeQuery(query)
+            data = {}
+            while query.next():
+                data[query.value("format")] = query.value("bytes")
             return data
 
         return None
 
     def imageData(self, row):
         record = self.record(row)
-        dataValue = record.value("itemData")
-        data = deserializeData(dataValue)
-
-        if formats.mimePng in data:
-            return data[formats.mimePng]
-
+        query = QSqlQuery(self.database())
+        prepareQuery(query, SQL_SELECT_DATA)
+        query.bindValue(":itemHash", record.value("itemHash"))
+        query.bindValue(":format", formats.mimePng)
+        executeQuery(query)
+        if query.next():
+            return query.value(0)
         return None

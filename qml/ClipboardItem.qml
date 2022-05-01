@@ -46,7 +46,7 @@ Item {
         }
 
         ClipboardItemHtml {
-            text: html
+            text: '[HTML] ' + html
             visible: html != ''
         }
 
