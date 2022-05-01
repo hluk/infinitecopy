@@ -127,8 +127,8 @@ class ClipboardItemModel(QSqlTableModel):
 
     @pyqtSlot(int)
     def removeItem(self, row):
-        self.beginTransaction()
-        self.removeRow(row)
+        if self.removeRow(row):
+            self.submitChanges()
 
     def generateRoleNames(self):
         self.roles = {}
