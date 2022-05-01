@@ -57,7 +57,7 @@ Item {
 
         ClipboardItemCopyTime {
             id: copyTimeText
-            text: copyTime ? Date(copyTime) : ''
+            text: copyTime ? new Date(copyTime) : ''
         }
     }
 }
