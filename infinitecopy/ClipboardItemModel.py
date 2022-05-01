@@ -110,15 +110,6 @@ class ClipboardItemModel(QSqlTableModel):
                 "Failed submit queries: " + self.lastError().text()
             )
 
-    def beginTransaction(self):
-        self.database().transaction()
-
-    def endTransaction(self):
-        if not self.database().commit():
-            raise ValueError(
-                "Failed submit queries: " + self.lastError().text()
-            )
-
     @pyqtSlot(int)
     def removeItem(self, row):
         if self.removeRow(row):
