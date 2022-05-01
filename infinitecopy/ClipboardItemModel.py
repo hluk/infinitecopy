@@ -7,6 +7,7 @@ from PyQt5.QtSql import QSqlQuery, QSqlTableModel
 import infinitecopy.MimeFormats as formats
 from infinitecopy.serialize import deserializeData, serializeData
 
+COLUMN_TEXT = 2
 SQL_CREATE_TABLE_ITEM = """
 CREATE TABLE IF NOT EXISTS item (
     copyTime TIMESTAMP NOT NULL,
@@ -22,22 +23,15 @@ SQL_CREATE_DB = [
 ]
 
 
-class Column:
-    TIMESTAMP = 0
-    HASH = 1
-    TEXT = 2
-    DATA = 3
-
-
 def createHash(data):
-    hash = hashlib.sha256()
+    hash_ = hashlib.sha256()
 
-    for format in data:
-        hash.update(format.encode("utf-8"))
-        hash.update(b";;")
-        hash.update(data[format])
+    for format_ in data:
+        hash_.update(format_.encode("utf-8"))
+        hash_.update(b";;")
+        hash_.update(data[format_])
 
-    return hash.hexdigest()
+    return hash_.hexdigest()
 
 
 def prepareQuery(query, queryText):
@@ -62,8 +56,9 @@ class ClipboardItemModel(QSqlTableModel):
     def __init__(self):
         QSqlTableModel.__init__(self)
         self.roles = {}
-        self.setEditStrategy(QSqlTableModel.EditStrategy.OnManualSubmit)
+        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.lastAddedHash = ""
+        self.generateRoleNames()
 
     def create(self):
         self.database().transaction()
@@ -76,9 +71,8 @@ class ClipboardItemModel(QSqlTableModel):
         self.database().commit()
 
         self.setTable("item")
-        self.setSort(0, Qt.SortOrder.DescendingOrder)
+        self.setSort(0, Qt.DescendingOrder)
         self.select()
-        self.generateRoleNames()
 
     def addItemNoEmpty(self, data):
         # Ignore empty data.
@@ -89,16 +83,16 @@ class ClipboardItemModel(QSqlTableModel):
             self.submitChanges()
 
     def addItemNoCommit(self, data):
-        hash = createHash(data)
-        if self.lastAddedHash == hash:
+        itemHash = createHash(data)
+        if self.lastAddedHash == itemHash:
             return False
 
-        self.lastAddedHash = hash
+        self.lastAddedHash = itemHash
 
         text = data.get(formats.mimeText, QByteArray())
 
         record = self.record()
-        record.setValue("itemHash", hash)
+        record.setValue("itemHash", itemHash)
         record.setValue("itemText", text)
         record.setValue("itemData", QByteArray(serializeData(data)))
         record.setValue("copyTime", QDateTime.currentDateTime())
@@ -131,13 +125,17 @@ class ClipboardItemModel(QSqlTableModel):
             self.submitChanges()
 
     def generateRoleNames(self):
-        self.roles = {}
-        for i in range(self.columnCount()):
-            self.roles[Qt.ItemDataRole.UserRole + i + 1] = self.headerData(
-                i, Qt.Orientation.Horizontal
-            ).encode()
+        self.roles = super().roleNames()
+        role = Qt.UserRole + 1
 
-        role = Qt.ItemDataRole.UserRole + self.columnCount()
+        self.copyTimeRole = role
+        self.roles[role] = b"copyTime"
+        role += 1
+
+        self.itemTextRole = role
+        self.roles[role] = b"itemText"
+        role += 1
+
         self.itemHtmlRole = role
         self.roles[role] = b"itemHtml"
         role += 1
@@ -154,14 +152,16 @@ class ClipboardItemModel(QSqlTableModel):
         return self.roles
 
     def data(self, index, role):
-        if role < Qt.ItemDataRole.UserRole:
+        if role < Qt.UserRole:
             return QSqlTableModel.data(self, index, role)
 
         record = self.record(index.row())
 
-        if role < Qt.ItemDataRole.UserRole + self.columnCount():
-            column = role - Qt.ItemDataRole.UserRole - 1
-            return record.value(column)
+        if role == self.copyTimeRole:
+            return record.value("copyTime")
+
+        if role == self.itemTextRole:
+            return record.value("itemText")
 
         dataValue = record.value("itemData")
         data = deserializeData(dataValue)
