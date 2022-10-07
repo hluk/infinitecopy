@@ -31,6 +31,7 @@ python3 infinitecopy.py
 
 Clone repository and **start** the app with:
 
+    poetry run python -m ensurepip --upgrade
     poetry install
     poetry run infinitecopy
 

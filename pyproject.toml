@@ -7,7 +7,7 @@ authors = ["Lukas Holecek <hluk@email.cz>"]
 include = ["infinitecopy.png", "qml/*"]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.11"
+python = ">=3.10,<3.11"
 PyQt5 = ">=5.15.2"
 PyGObject = [
   {version = "^3.42.0", markers = "platform_system == 'Linux'"}
@@ -18,18 +18,13 @@ black = "^22.1.0"
 flake8 = "^4.0.1"
 isort = "^5.10.1"
 bandit = "^1.7.1"
-safety = "^1.10.3"
-Nuitka = [
-  # There are issues with Nuitka 0.6.18 on Windows. It raises FileNotFoundError
-  # in subprocess.Popen but does not show the executable path.
-  {version = "=0.6.17", markers = "platform_system == 'Windows'"},
-  {version = "^0.6.19", markers = "platform_system != 'Windows'"}
-]
+safety = "^2.2.0"
+Nuitka = "^1.2.1"
 zstandard = "^0.16.0"
 imageio = [
-  {version = "^2.11.1", markers = "platform_system == 'Windows'"}
+  {version = "^2.22.4", markers = "platform_system != 'Linux'"}
 ]
-pillow = ">=9.0.0"
+pillow = "^9.3.0"
 pyright = "^1.1.241"
 pylint = "^2.13.7"
 

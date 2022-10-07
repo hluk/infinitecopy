@@ -22,7 +22,7 @@ jobs:
           - ubuntu-latest
 
         python-version:
-          - 3.9
+          - "3.10"
 
         poetry-version:
           - 1.1.11
@@ -32,18 +32,21 @@ jobs:
             buildname: Windows
             artifact-name: infinitecopy for Windows
             artifact-file: infinitecopy.exe
+            command: ./infinitecopy.exe
             nuitka-arguments: --windows-icon-from-ico=infinitecopy.png --lto=no
 
           - os: macos-latest
             buildname: macOS
             artifact-name: infinitecopy for macOS
-            artifact-file: infinitecopy.bin
-            nuitka-arguments: --macos-onefile-icon=infinitecopy.png --clang
+            artifact-file: infinitecopy.app
+            command: infinitecopy.app/Contents/MacOS/infinitecopy
+            nuitka-arguments: --macos-app-icon=infinitecopy.png --clang --macos-create-app-bundle
 
           - os: ubuntu-latest
             buildname: Linux
             artifact-name: infinitecopy for Linux
             artifact-file: infinitecopy.bin
+            command: ./infinitecopy.bin
             nuitka-arguments: --linux-onefile-icon=infinitecopy.png
 
     steps:
@@ -99,8 +102,10 @@ jobs:
         if: runner.os == 'macOS'
         shell: bash
         run: >-
-          ln -s /usr/local/opt/openssl@1.1/lib/libcrypto.1.1.dylib /usr/local/lib/libcrypto.dylib &&
-          ln -s /usr/local/opt/openssl@1.1/lib/libssl.1.1.dylib /usr/local/lib/libssl.dylib
+          brew link --overwrite openssl@1.1 &&
+          brew install postgresql &&
+          brew unlink unixodbc &&
+          brew install libiodbc
 
       - name: Use version from Git
         shell: bash
@@ -111,7 +116,7 @@ jobs:
           PYTHONIOENCODING: utf-8
           LD_LIBRARY_PATH: /usr/local/lib/:$LD_LIBRARY_PATH
         run: >-
-          poetry run nuitka3
+          poetry run python -m nuitka
           --onefile
           --standalone
           --python-flag=no_site
@@ -134,3 +139,8 @@ jobs:
         with:
           name: ${{ matrix.artifact-name }}
           path: ${{ matrix.artifact-file }}
+          if-no-files-found: error
+
+      - name: Run smoke test
+        shell: bash
+        run: ./${{ matrix.artifact-file }} --version
