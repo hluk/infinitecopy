@@ -2,11 +2,11 @@
 from time import sleep
 
 import gi
-from PyQt5.QtCore import (
+from PySide6.QtCore import (
     QCoreApplication,
     QObject,
     QTimer,
-    pyqtSlot,
+    Slot,
     qDebug,
     qWarning,
 )
@@ -35,7 +35,7 @@ class Paster(QObject):
         self.idle_timer.setInterval(1)
         self.idle_timer.timeout.connect(self._idle)
 
-    @pyqtSlot(str)
+    @Slot(str)
     def paste(self, text):
         self.success = False
 

@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
-from PyQt5.QtCore import (
+from PySide6.QtCore import (
+    Property,
     QByteArray,
     QCoreApplication,
     QElapsedTimer,
@@ -7,13 +8,12 @@ from PyQt5.QtCore import (
     QObject,
     QProcess,
     QTimer,
-    pyqtProperty,
-    pyqtSignal,
-    pyqtSlot,
+    Signal,
+    Slot,
     qCritical,
     qWarning,
 )
-from PyQt5.QtQml import QJSValue
+from PySide6.QtQml import QJSValue
 
 import infinitecopy.MimeFormats as formats
 
@@ -179,7 +179,7 @@ class ClipboardSetterProcess:
 
 
 class WaylandClipboard(QObject):
-    changed = pyqtSignal(dict)
+    changed = Signal(dict)
 
     def __init__(self, config):
         super().__init__()
@@ -243,7 +243,7 @@ class WaylandClipboard(QObject):
         if data:
             self.changed.emit(data)
 
-    @pyqtProperty(str)
+    @Property(str)
     def text(self):
         return bytes(clipboardData(formats.mimeText, [])).decode("utf-8")
 
@@ -253,7 +253,7 @@ class WaylandClipboard(QObject):
             formats.mimeText, text.encode("utf-8")
         )
 
-    @pyqtSlot(QJSValue)
+    @Slot(QJSValue)
     def setData(self, value):
         clearClipboardData()
         data = value.toVariant()

@@ -18,7 +18,6 @@ jobs:
       matrix:
         os:
           - windows-latest
-          - macos-latest
           - ubuntu-latest
 
         python-version:
@@ -34,13 +33,6 @@ jobs:
             artifact-file: infinitecopy.exe
             command: ./infinitecopy.exe
             nuitka-arguments: --windows-icon-from-ico=infinitecopy.png --lto=no
-
-          - os: macos-latest
-            buildname: macOS
-            artifact-name: infinitecopy for macOS
-            artifact-file: infinitecopy.app
-            command: infinitecopy.app/Contents/MacOS/infinitecopy
-            nuitka-arguments: --macos-app-icon=infinitecopy.png --clang --macos-create-app-bundle
 
           - os: ubuntu-latest
             buildname: Linux
@@ -98,15 +90,6 @@ jobs:
             libegl1
             libopengl0
 
-      - name: (macOS) Fix build dependencies
-        if: runner.os == 'macOS'
-        shell: bash
-        run: >-
-          brew link --overwrite openssl@1.1 &&
-          brew install postgresql &&
-          brew unlink unixodbc &&
-          brew install libiodbc
-
       - name: Use version from Git
         shell: bash
         run: ./update_version.sh
@@ -121,12 +104,13 @@ jobs:
           --standalone
           --python-flag=no_site
           --assume-yes-for-downloads
-          --plugin-enable=pyqt5
+          --plugin-enable=pyside6
           --plugin-enable=anti-bloat
           --include-qt-plugins="sensible,sqldrivers,qml"
           --show-modules
           --show-scons
           --include-data-dir=qml=qml
+          --disable-console
           ${{ matrix.nuitka-arguments }}
           infinitecopy
 

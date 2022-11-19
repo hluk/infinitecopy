@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
 import hashlib
 
-from PyQt5.QtCore import QByteArray, QDateTime, Qt, pyqtSlot
-from PyQt5.QtSql import QSqlQuery, QSqlTableModel
+from PySide6.QtCore import QByteArray, QDateTime, Qt, Slot
+from PySide6.QtSql import QSqlQuery, QSqlTableModel
 
 import infinitecopy.MimeFormats as formats
 from infinitecopy.serialize import deserializeData, serializeData
@@ -110,7 +110,7 @@ class ClipboardItemModel(QSqlTableModel):
                 "Failed submit queries: " + self.lastError().text()
             )
 
-    @pyqtSlot(int)
+    @Slot(int)
     def removeItem(self, row):
         if self.removeRow(row):
             self.submitChanges()

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-2.0-or-later
-import QtQuick 2.7
-import QtQuick.Controls 1.4
-import QtQuick.Layouts 1.3
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
 ColumnLayout {
     Accessible.name: "infinitecopy main window"
@@ -38,8 +38,7 @@ ColumnLayout {
             // Copy item action
             MenuItem {
                 text: qsTr("&Copy")
-                shortcut: StandardKey.Copy
-                iconName: "edit-copy"
+                icon.name: "edit-copy"
                 enabled: clipboardItemView.currentIndex >= 0
                 onTriggered: clipboard.setData(clipboardItemView.currentItem.dataDict)
             }
@@ -47,8 +46,7 @@ ColumnLayout {
             // Delete item action
             MenuItem {
                 text: qsTr("&Delete")
-                shortcut: StandardKey.Delete
-                iconName: "edit-delete"
+                icon.name: "edit-delete"
                 enabled: clipboardItemView.currentIndex >= 0
                 onTriggered: clipboardItemModel.removeItem(clipboardItemView.currentIndex)
             }
@@ -76,6 +74,12 @@ ColumnLayout {
             sequence: 'Return'
             onActivated: {
                 view.hide()
+                clipboard.setData(clipboardItemView.currentItem.dataDict)
+            }
+        }
+        Shortcut {
+            sequences: [StandardKey.Copy]
+            onActivated: {
                 clipboard.setData(clipboardItemView.currentItem.dataDict)
             }
         }
@@ -176,6 +180,13 @@ ColumnLayout {
                     clipboardItemView.currentIndex = index
                     clipboardItemView.positionViewAtIndex(index, ListView.End)
                 }
+            }
+        }
+
+        Shortcut {
+            sequences: [StandardKey.Delete]
+            onActivated: {
+                clipboardItemModel.removeItem(clipboardItemView.currentIndex)
             }
         }
 
