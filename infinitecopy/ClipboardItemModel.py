@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
 import hashlib
 
-from PySide6.QtCore import QByteArray, QDateTime, Qt, Slot
-from PySide6.QtSql import QSqlQuery, QSqlTableModel
+from PyQt6.QtCore import QByteArray, QDateTime, Qt, pyqtSlot
+from PyQt6.QtSql import QSqlQuery, QSqlTableModel
 
 import infinitecopy.MimeFormats as formats
 from infinitecopy.serialize import deserializeData, serializeData
@@ -44,7 +44,7 @@ def prepareQuery(query, queryText):
 
 
 def executeQuery(query):
-    if not query.exec_():
+    if not query.exec():
         raise ValueError(
             "Failed to execute query: {}\nLast error: {}".format(
                 query.lastQuery(), query.lastError().text()
@@ -56,7 +56,7 @@ class ClipboardItemModel(QSqlTableModel):
     def __init__(self):
         QSqlTableModel.__init__(self)
         self.roles = {}
-        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.setEditStrategy(QSqlTableModel.EditStrategy.OnManualSubmit)
         self.lastAddedHash = ""
         self.generateRoleNames()
 
@@ -71,7 +71,7 @@ class ClipboardItemModel(QSqlTableModel):
         self.database().commit()
 
         self.setTable("item")
-        self.setSort(0, Qt.DescendingOrder)
+        self.setSort(0, Qt.SortOrder.DescendingOrder)
         self.select()
 
     def addItemNoEmpty(self, data):
@@ -110,14 +110,14 @@ class ClipboardItemModel(QSqlTableModel):
                 "Failed submit queries: " + self.lastError().text()
             )
 
-    @Slot(int)
+    @pyqtSlot(int)
     def removeItem(self, row):
         if self.removeRow(row):
             self.submitChanges()
 
     def generateRoleNames(self):
         self.roles = super().roleNames()
-        role = Qt.UserRole + 1
+        role = Qt.ItemDataRole.UserRole + 1
 
         self.copyTimeRole = role
         self.roles[role] = b"copyTime"
@@ -143,7 +143,7 @@ class ClipboardItemModel(QSqlTableModel):
         return self.roles
 
     def data(self, index, role):
-        if role < Qt.UserRole:
+        if role < Qt.ItemDataRole.UserRole:
             return QSqlTableModel.data(self, index, role)
 
         record = self.record(index.row())

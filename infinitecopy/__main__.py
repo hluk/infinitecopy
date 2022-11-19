@@ -5,7 +5,7 @@ import getpass
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QCoreApplication, QDir, QStandardPaths
+from PyQt6.QtCore import QCoreApplication, QDir, QStandardPaths, qInfo
 
 from infinitecopy import __version__
 from infinitecopy.Application import Application, ApplicationError
@@ -37,13 +37,13 @@ def parseArguments(args=None):
 
 def createDbPath():
     dataPath = QStandardPaths.writableLocation(
-        QStandardPaths.AppLocalDataLocation
+        QStandardPaths.StandardLocation.AppLocalDataLocation
     )
     if not QDir(dataPath).mkpath("."):
         raise SystemExit(f"Failed to create data directory {dataPath}")
 
     dbPath = Path(dataPath, "infinitecopy_items.sql")
-    print(f'Using item database "{dbPath}"', file=sys.stderr)
+    qInfo(f'Using item database "{dbPath}"')
     return str(dbPath)
 
 
@@ -90,7 +90,7 @@ def main():
 
     setUpPaths(app)
 
-    return app.exec_()
+    return app.exec()
 
 
 if __name__ == "__main__":

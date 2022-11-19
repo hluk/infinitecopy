@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
-from PySide6.QtCore import (
-    Property,
+from PyQt6.QtCore import (
     QByteArray,
     QCoreApplication,
     QElapsedTimer,
@@ -8,12 +7,13 @@ from PySide6.QtCore import (
     QObject,
     QProcess,
     QTimer,
-    Signal,
-    Slot,
+    pyqtProperty,
+    pyqtSignal,
+    pyqtSlot,
     qCritical,
     qWarning,
 )
-from PySide6.QtQml import QJSValue
+from PyQt6.QtQml import QJSValue
 
 import infinitecopy.MimeFormats as formats
 
@@ -28,8 +28,9 @@ IGNORED_WL_PASTE_ERRORS = [
 
 
 def isFinished(process, timeout):
-    return process.state() == QProcess.NotRunning or process.waitForFinished(
-        timeout
+    return (
+        process.state() == QProcess.ProcessState.NotRunning
+        or process.waitForFinished(timeout)
     )
 
 
@@ -73,7 +74,9 @@ def startWlPasteProcess(args, slot):
 
     process.readyReadStandardOutput.connect(changed)
     process.readyReadStandardError.connect(readErrorOutput)
-    process.start("wl-paste", ["--watch", "echo"] + args, QIODevice.ReadOnly)
+    process.start(
+        "wl-paste", ["--watch", "echo"] + args, QIODevice.OpenModeFlag.ReadOnly
+    )
     if not process.waitForStarted(PROCESS_START_TIMEOUT_MS):
         qCritical(
             "Failed to start clipboard monitoring with wl-paste: "
@@ -120,7 +123,9 @@ class ClipboardDataProcess:
         self.process.readyReadStandardError.connect(self.readErrorOutput)
 
         self.process.start(
-            "wl-paste", ["--type", format_] + args, QIODevice.ReadOnly
+            "wl-paste",
+            ["--type", format_] + args,
+            QIODevice.OpenModeFlag.ReadOnly,
         )
 
         if not self.process.waitForStarted(PROCESS_START_TIMEOUT_MS):
@@ -156,7 +161,7 @@ class ClipboardSetterProcess:
         self.process.readyReadStandardError.connect(self.readErrorOutput)
         self.process.closeReadChannel(QProcess.StandardOutput)
 
-        self.process.start("wl-copy", args, QIODevice.ReadWrite)
+        self.process.start("wl-copy", args, QIODevice.OpenModeFlag.ReadWrite)
 
         if not self.process.waitForStarted(PROCESS_START_TIMEOUT_MS):
             qCritical(
@@ -179,7 +184,7 @@ class ClipboardSetterProcess:
 
 
 class WaylandClipboard(QObject):
-    changed = Signal(dict)
+    changed = pyqtSignal(dict)
 
     def __init__(self, config):
         super().__init__()
@@ -243,7 +248,7 @@ class WaylandClipboard(QObject):
         if data:
             self.changed.emit(data)
 
-    @Property(str)
+    @pyqtProperty(str)
     def text(self):
         return bytes(clipboardData(formats.mimeText, [])).decode("utf-8")
 
@@ -253,7 +258,7 @@ class WaylandClipboard(QObject):
             formats.mimeText, text.encode("utf-8")
         )
 
-    @Slot(QJSValue)
+    @pyqtSlot(QJSValue)
     def setData(self, value):
         clearClipboardData()
         data = value.toVariant()

@@ -1,10 +1,14 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
-import sys
-
-from PySide6.QtCore import QByteArray, QSortFilterProxyModel, QUrl, qWarning
-from PySide6.QtGui import QGuiApplication, QIcon
-from PySide6.QtQuick import QQuickView
-from PySide6.QtSql import QSqlDatabase
+from PyQt6.QtCore import (
+    QByteArray,
+    QSortFilterProxyModel,
+    QUrl,
+    qInfo,
+    qWarning,
+)
+from PyQt6.QtGui import QGuiApplication, QIcon
+from PyQt6.QtQuick import QQuickView
+from PyQt6.QtSql import QSqlDatabase
 
 import infinitecopy.MimeFormats as formats
 from infinitecopy.ClipboardFactory import createClipboard
@@ -23,7 +27,7 @@ def pasterIfAvailable(view):
     try:
         from infinitecopy.Paster import Paster
     except (ImportError, ValueError) as e:
-        print(f"Pasting won't work: {e}", file=sys.stderr)
+        qInfo(f"Pasting won't work: {e}")
         return None
 
     return Paster(view)
@@ -87,13 +91,13 @@ class Application:
         self.view.setSource(QUrl.fromLocalFile(path))
         self.view.setGeometry(100, 100, 400, 240)
 
-    def exec_(self):
+    def exec(self):
         self.view.show()
-        return self.app.exec_()
+        return self.app.exec()
 
     def _on_message(self, commands):
         if commands == ["show"]:
-            print("Activating window", file=sys.stderr)
+            qInfo("Activating window")
             self.view.hide()
             self.view.show()
         elif commands[0] == "add":

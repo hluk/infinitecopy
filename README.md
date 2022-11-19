@@ -14,7 +14,7 @@ run](https://github.com/hluk/infinitecopy/actions?query=is%3Asuccess).
 The application requires to run recent enough versions of the following applications.
 
 - Python
-- PySide6
+- PyQt6
 - Qt Quick 5 libraries
 
 ## Run

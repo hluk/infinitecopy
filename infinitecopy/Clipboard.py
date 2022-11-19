@@ -1,11 +1,18 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
-from PySide6.QtCore import Property, QMimeData, QObject, QTimer, Signal, Slot
-from PySide6.QtGui import QClipboard, QGuiApplication
-from PySide6.QtQml import QJSValue
+from PyQt6.QtCore import (
+    QMimeData,
+    QObject,
+    QTimer,
+    pyqtProperty,
+    pyqtSignal,
+    pyqtSlot,
+)
+from PyQt6.QtGui import QClipboard, QGuiApplication
+from PyQt6.QtQml import QJSValue
 
 
 class Clipboard(QObject):
-    changed = Signal(dict)
+    changed = pyqtSignal(dict)
 
     def __init__(self, config):
         QObject.__init__(self)
@@ -51,7 +58,7 @@ class Clipboard(QObject):
                 data[format] = mimeData.data(format)
         self.changed.emit(data)
 
-    @Property(str)
+    @pyqtProperty(str)
     def text(self):
         clipboard = QGuiApplication.clipboard()
         return clipboard.text()
@@ -61,7 +68,7 @@ class Clipboard(QObject):
         clipboard = QGuiApplication.clipboard()
         return clipboard.setText(text)
 
-    @Slot(QJSValue)
+    @pyqtSlot(QJSValue)
     def setData(self, value):
         data = value.toVariant()
         mimeData = QMimeData()

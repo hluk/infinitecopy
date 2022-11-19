@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
-from PySide6.QtNetwork import QLocalSocket
+from PyQt6.QtNetwork import QLocalSocket
 
 from infinitecopy.serialize import serializeData
 

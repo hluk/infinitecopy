@@ -1,12 +1,14 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
-from PySide6.QtCore import QSize
-from PySide6.QtGui import QPixmap
-from PySide6.QtQuick import QQuickImageProvider
+from PyQt6.QtCore import QSize
+from PyQt6.QtGui import QPixmap
+from PyQt6.QtQuick import QQuickImageProvider
 
 
 class ClipboardItemModelImageProvider(QQuickImageProvider):
     def __init__(self, model):
-        QQuickImageProvider.__init__(self, QQuickImageProvider.Pixmap)
+        QQuickImageProvider.__init__(
+            self, QQuickImageProvider.ImageType.Pixmap
+        )
         self.model = model
 
     def requestPixmap(self, id, size):

@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
-from PySide6.QtCore import QObject, Signal
-from PySide6.QtNetwork import QLocalServer
+from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtNetwork import QLocalServer
 
 from infinitecopy.serialize import deserializeData
 
 
 class Server(QObject):
-    messageReceived = Signal(list)
+    messageReceived = pyqtSignal(list)
 
     def __init__(self):
         super().__init__()

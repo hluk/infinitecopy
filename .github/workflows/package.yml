@@ -104,7 +104,7 @@ jobs:
           --standalone
           --python-flag=no_site
           --assume-yes-for-downloads
-          --plugin-enable=pyside6
+          --plugin-enable=pyqt6
           --plugin-enable=anti-bloat
           --include-qt-plugins="sensible,sqldrivers,qml"
           --show-modules
