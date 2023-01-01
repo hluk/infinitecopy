@@ -200,11 +200,11 @@ tifffile = ["tifffile"]
 
 [[package]]
 name = "isort"
-version = "5.10.1"
+version = "5.11.4"
 description = "A Python utility / library to sort Python imports."
 category = "dev"
 optional = false
-python-versions = ">=3.6.1,<4.0"
+python-versions = ">=3.7.0"
 
 [package.extras]
 colors = ["colorama (>=0.4.3,<0.5.0)"]
@@ -587,7 +587,7 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10,<3.11"
-content-hash = "4600b071b8a855e8b15f0f1388d66e18085aabca67f9a2b43a3a38d05bcde864"
+content-hash = "464b6bf08c8dd10c6cc5cd45df698a7db3d3929cacaa153c9fbfe8fcc190ce56"
 
 [metadata.files]
 astroid = [
@@ -732,8 +732,8 @@ imageio = [
     {file = "imageio-2.22.4.tar.gz", hash = "sha256:0fae027addf02bc89c73a56cc157ad84557f8b8b84aa19b4cb706fefca2d88ff"},
 ]
 isort = [
-    {file = "isort-5.10.1-py3-none-any.whl", hash = "sha256:6f62d78e2f89b4500b080fe3a81690850cd254227f27f75c3a0c491a1f351ba7"},
-    {file = "isort-5.10.1.tar.gz", hash = "sha256:e8443a5e7a020e9d7f97f1d7d9cd17c88bcb3bc7e218bf9cf5095fe550be2951"},
+    {file = "isort-5.11.4-py3-none-any.whl", hash = "sha256:c033fd0edb91000a7f09527fe5c75321878f98322a77ddcc81adbd83724afb7b"},
+    {file = "isort-5.11.4.tar.gz", hash = "sha256:6db30c5ded9815d813932c04c2f85a360bcdd35fed496f4d8f35495ef0a261b6"},
 ]
 lazy-object-proxy = [
     {file = "lazy-object-proxy-1.8.0.tar.gz", hash = "sha256:c219a00245af0f6fa4e95901ed28044544f50152840c5b6a3e7b2568db34d156"},
