@@ -16,7 +16,7 @@ PyGObject = [
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
 flake8 = "^6.0.0"
-isort = "^5.10.1"
+isort = "^5.11.4"
 bandit = "^1.7.1"
 safety = "^2.3.3"
 Nuitka = "^1.2.3"
