@@ -26,7 +26,7 @@ imageio = [
 ]
 pillow = "^9.3.0"
 pyright = "^1.1.241"
-pylint = "^2.15.7"
+pylint = "^2.15.9"
 
 [tool.poetry.scripts]
 infinitecopy = "infinitecopy.__main__:main"
