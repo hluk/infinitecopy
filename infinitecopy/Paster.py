@@ -1,82 +1,60 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
-from time import sleep
+from PySide6.QtCore import QCoreApplication, QObject, QThread, QTimer, Slot
 
-import gi
-from PySide6.QtCore import (
-    QCoreApplication,
-    QObject,
-    QTimer,
-    Slot,
-    qDebug,
-    qWarning,
-)
+from infinitecopy.FocusMonitor import FocusMonitor
 
-gi.require_version("Atspi", "2.0")
-from gi.repository import Atspi  # noqa: E402
-
-PASTE_TIMEOUT_MS = 500
-TEXT_ENTRY_ROLES = [
-    Atspi.Role.ENTRY,
-    Atspi.Role.PASSWORD_TEXT,
-]
+PASTE_TIMEOUT_MS = 1000
 
 
 class Paster(QObject):
-    def __init__(self, view):
+    def __init__(self):
         super().__init__()
+        self.focused_text_entry = None
+        self.text_to_paste = None
 
-        self.view = view
+        self.clear_timer = QTimer()
+        self.clear_timer.setSingleShot(True)
+        self.clear_timer.timeout.connect(self._clear_text_to_paste)
 
-        self.stop_timer = QTimer()
-        self.stop_timer.setSingleShot(True)
-        self.stop_timer.timeout.connect(Atspi.event_quit)
-
-        self.idle_timer = QTimer()
-        self.idle_timer.setInterval(1)
-        self.idle_timer.timeout.connect(self._idle)
+        self.monitor_thread = QThread()
+        self.monitor = FocusMonitor()
+        self.monitor.moveToThread(self.monitor_thread)
+        self.monitor_thread.started.connect(self.monitor.start)
+        self.monitor.text_entry_focused.connect(self._on_text_entry_focused)
+        self.monitor_thread.start()
+        QCoreApplication.instance().aboutToQuit.connect(self._stop)
 
     @Slot(str)
     def paste(self, text):
-        self.success = False
+        self.text_to_paste = text
+        if self._paste():
+            return True
 
-        def on_focus_changed(event):
-            obj = event.source
-            is_focused = event.detail1 == 1
-            qDebug(
-                f"Focus changed: {obj.get_role_name()}"
-                f" {'focused' if is_focused else 'defocused'}"
+        self.clear_timer.start(PASTE_TIMEOUT_MS)
+        return False
+
+    def _on_text_entry_focused(self, text_entry):
+        self.focused_text_entry = text_entry
+        self._paste()
+
+    def _paste(self):
+        if self.text_to_paste and self.focused_text_entry:
+            success = self.focused_text_entry.insert_text(
+                self.focused_text_entry.get_caret_offset(),
+                self.text_to_paste,
+                len(self.text_to_paste),
             )
-            if is_focused:
-                if obj.role in TEXT_ENTRY_ROLES:
-                    self.success = obj.insert_text(
-                        obj.get_caret_offset(), text, len(text)
-                    )
-                    self.stop_timer.start(0)
+            if success:
+                self.text_to_paste = None
+                self.clear_timer.stop()
+                return True
 
-        listener = Atspi.EventListener.new(
-            self._eventWrapper, on_focus_changed
-        )
-        Atspi.EventListener.register(listener, "object:state-changed:focused")
+        return False
 
-        self.stop_timer.start(PASTE_TIMEOUT_MS)
-        self.idle_timer.start()
-        QTimer.singleShot(0, self.view.hide)
-        Atspi.event_main()
-        self.idle_timer.stop()
+    def _stop(self):
+        self.monitor.stop()
+        self.monitor_thread.quit()
+        self.monitor_thread.wait()
 
-        Atspi.EventListener.deregister(
-            listener, "object:state-changed:focused"
-        )
-
-        if not self.success:
-            qWarning("Failed to paste text")
-
-        return self.success
-
-    def _idle(self):
-        QCoreApplication.processEvents()
-        # releases GIL
-        sleep(1e-2)
-
-    def _eventWrapper(self, event, callback):
-        return callback(event)
+    def _clear_text_to_paste(self):
+        self.text_to_paste = None

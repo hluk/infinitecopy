@@ -88,15 +88,19 @@ ColumnLayout {
         Shortcut {
             sequence: 'Shift+Enter'
             onActivated: {
-                if (paster)
+                if (paster) {
+                    view.hide()
                     paster.paste(clipboardItemView.currentItem.text)
+                }
             }
         }
         Shortcut {
             sequence: 'Shift+Return'
             onActivated: {
-                if (paster)
+                if (paster) {
+                    view.hide()
                     paster.paste(clipboardItemView.currentItem.text)
+                }
             }
         }
 

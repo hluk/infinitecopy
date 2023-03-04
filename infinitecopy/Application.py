@@ -19,14 +19,14 @@ class ApplicationError(RuntimeError):
     pass
 
 
-def pasterIfAvailable(view):
+def pasterIfAvailable():
     try:
         from infinitecopy.Paster import Paster
     except (ImportError, ValueError) as e:
         print(f"Pasting won't work: {e}", file=sys.stderr)
         return None
 
-    return Paster(view)
+    return Paster()
 
 
 class Application:
@@ -73,7 +73,7 @@ class Application:
         self.context.setContextProperty("clipboard", self.clipboard)
         self.context.setContextProperty("view", self.view)
 
-        self.paster = pasterIfAvailable(self.view)
+        self.paster = pasterIfAvailable()
         self.context.setContextProperty("paster", self.paster)
 
         self.engine.quit.connect(QGuiApplication.quit)
@@ -102,5 +102,14 @@ class Application:
                     {formats.mimeText: QByteArray(text.encode("utf-8"))}
                 )
             self.clipboardItemModel.submitChanges()
+        elif commands[0] == "paste":
+            if self.paster is None:
+                qWarning("Pasting text is unsupported")
+            else:
+                print("Pasting text", file=sys.stderr)
+                for text in commands[1:]:
+                    if not self.paster.paste(text):
+                        qWarning("Failed to paste text")
+                        break
         else:
             qWarning(f"Unknown message received: {commands}")

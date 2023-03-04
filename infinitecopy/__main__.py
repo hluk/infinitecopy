@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
 import argparse
 import getpass
+import signal
 import sys
 from pathlib import Path
 
@@ -73,6 +74,9 @@ def handleClient(serverName, args):
 
 
 def main():
+    # Force exit app on SIGINT.
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
     serverName = f"{APPLICATION_NAME}_{getpass.getuser()}"
     if handleClient(serverName, parseArguments()):
         return
