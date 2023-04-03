@@ -8,24 +8,24 @@ include = ["infinitecopy.png", "qml/*"]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
-PySide6-Essentials = "^6.4.2"
+PySide6-Essentials = "^6.4.3"
 PyGObject = [
   {version = "^3.42.0", markers = "platform_system == 'Linux'"}
 ]
 
 [tool.poetry.dev-dependencies]
-black = "^23.1.0"
+black = "^23.3.0"
 flake8 = "^6.0.0"
 isort = "^5.12.0"
-bandit = "^1.7.1"
-Nuitka = "^1.4.8"
+bandit = "^1.7.5"
+Nuitka = "^1.5.4"
 zstandard = "^0.20.0"
 imageio = [
   {version = "^2.22.4", markers = "platform_system != 'Linux'"}
 ]
 pillow = "^9.3.0"
 pyright = "^1.1.296"
-pylint = "^2.16.2"
+pylint = "^2.17.1"
 
 [tool.poetry.scripts]
 infinitecopy = "infinitecopy.__main__:main"
