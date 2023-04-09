@@ -42,11 +42,12 @@ class Application:
 
         self.db = QSqlDatabase.addDatabase("QSQLITE")
         self.db.setDatabaseName(dbPath)
-        self.db.open()
+        if not self.db.open():
+            raise ApplicationError(self.db.lastError().text())
 
         self.view = QQuickView()
 
-        self.clipboardItemModel = ClipboardItemModel()
+        self.clipboardItemModel = ClipboardItemModel(self.db)
         self.clipboardItemModel.create()
 
         self.filterProxyModel = QSortFilterProxyModel()

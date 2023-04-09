@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
-from PySide6.QtCore import QSize
 from PySide6.QtGui import QPixmap
 from PySide6.QtQuick import QQuickImageProvider
 
@@ -9,18 +8,18 @@ class ClipboardItemModelImageProvider(QQuickImageProvider):
         QQuickImageProvider.__init__(self, QQuickImageProvider.Pixmap)
         self.model = model
 
-    def requestPixmap(self, id, size):
+    def requestPixmap(self, id, size, _requestedSize):
         row = int(id)
 
         if row < 0 or row >= self.model.rowCount():
-            return QPixmap(), QSize()
+            return QPixmap()
 
         data = self.model.imageData(row)
         if data is None:
-            return QPixmap(), QSize()
+            return QPixmap()
 
         pixmap = QPixmap()
         if not pixmap.loadFromData(data):
-            return QPixmap(), QSize()
+            return QPixmap()
 
-        return pixmap, pixmap.size()
+        return pixmap
