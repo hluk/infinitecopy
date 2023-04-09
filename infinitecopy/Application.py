@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
-import sys
+import logging
 
-from PySide6.QtCore import QByteArray, QSortFilterProxyModel, QUrl, qWarning
+from PySide6.QtCore import QByteArray, QSortFilterProxyModel, QUrl
 from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQuick import QQuickView
 from PySide6.QtSql import QSqlDatabase
@@ -12,7 +12,10 @@ from infinitecopy.ClipboardItemModel import COLUMN_TEXT, ClipboardItemModel
 from infinitecopy.ClipboardItemModelImageProvider import (
     ClipboardItemModelImageProvider,
 )
+from infinitecopy.PluginManager import PluginManager
 from infinitecopy.Server import Server
+
+logger = logging.getLogger(__name__)
 
 
 class ApplicationError(RuntimeError):
@@ -23,14 +26,16 @@ def pasterIfAvailable():
     try:
         from infinitecopy.Paster import Paster
     except (ImportError, ValueError) as e:
-        print(f"Pasting won't work: {e}", file=sys.stderr)
+        logger.info(f"Pasting won't work: {e}")
         return None
 
     return Paster()
 
 
 class Application:
-    def __init__(self, *, name, version, dbPath, serverName, args):
+    def __init__(
+        self, *, name, version, dbPath, serverName, enable_pasting, args
+    ):
         self.app = QGuiApplication(args)
         self.app.setApplicationName(name)
         self.app.setApplicationDisplayName(name)
@@ -55,7 +60,6 @@ class Application:
         self.filterProxyModel.setFilterKeyColumn(COLUMN_TEXT)
 
         self.clipboard = createClipboard()
-        self.clipboard.changed.connect(self.clipboardItemModel.addItemNoEmpty)
 
         self.engine = self.view.engine()
 
@@ -74,12 +78,15 @@ class Application:
         self.context.setContextProperty("clipboard", self.clipboard)
         self.context.setContextProperty("view", self.view)
 
-        self.paster = pasterIfAvailable()
+        self.paster = pasterIfAvailable() if enable_pasting else None
         self.context.setContextProperty("paster", self.paster)
 
         self.engine.quit.connect(QGuiApplication.quit)
 
         self.server.messageReceived.connect(self._on_message)
+
+        self.plugin_manager = PluginManager(self)
+        self.clipboard.changed.connect(self.plugin_manager.onClipboardChanged)
 
     def setIcon(self, iconPath):
         self.app.setWindowIcon(QIcon(iconPath))
@@ -94,7 +101,7 @@ class Application:
 
     def _on_message(self, commands):
         if commands == ["show"]:
-            print("Activating window", file=sys.stderr)
+            logger.debug("Activating window")
             self.view.hide()
             self.view.show()
         elif commands[0] == "add":
@@ -105,12 +112,12 @@ class Application:
             self.clipboardItemModel.submitChanges()
         elif commands[0] == "paste":
             if self.paster is None:
-                qWarning("Pasting text is unsupported")
+                logger.warning("Pasting text is unsupported")
             else:
-                print("Pasting text", file=sys.stderr)
+                logger.info("Pasting text")
                 for text in commands[1:]:
                     if not self.paster.paste(text):
-                        qWarning("Failed to paste text")
+                        logger.warning("Failed to paste text")
                         break
         else:
-            qWarning(f"Unknown message received: {commands}")
+            logger.warning(f"Unknown message received: {commands}")

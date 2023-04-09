@@ -1,9 +1,12 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
+import logging
 import os
 
 import infinitecopy.MimeFormats as formats
 from infinitecopy.Clipboard import Clipboard
 from infinitecopy.WaylandClipboard import WaylandClipboard
+
+logger = logging.getLogger(__name__)
 
 
 class ClipboardConfig:
@@ -21,8 +24,11 @@ def createClipboard():
     config = ClipboardConfig()
 
     if os.environ.get("WAYLAND_DISPLAY"):
-        clipboard = WaylandClipboard(config)
-    else:
-        clipboard = Clipboard(config)
+        if os.environ.get("INFINITECOPY_GENERIC_CLIPBOARD") != "1":
+            clipboard = WaylandClipboard(config)
+            if clipboard.isOk():
+                return clipboard
 
-    return clipboard
+        logger.warning("Using generic non-wayland clipboard access")
+
+    return Clipboard(config)
