@@ -24,19 +24,16 @@ jobs:
           - "3.10"
 
         include:
-          - os: windows-latest
-            buildname: Windows
-            artifact-name: infinitecopy for Windows
-            artifact-file: infinitecopy.exe
-            command: ./infinitecopy.exe
-            nuitka-arguments: --windows-icon-from-ico=infinitecopy.png --lto=no
-
           - os: ubuntu-latest
-            buildname: Linux
-            artifact-name: infinitecopy for Linux
+            buildname: Linux (debug)
+            artifact-name: infinitecopy for Linux (debug)
             artifact-file: infinitecopy.bin
             command: ./infinitecopy.bin
-            nuitka-arguments: --linux-onefile-icon=infinitecopy.png
+            nuitka-arguments: >-
+              --linux-onefile-icon=infinitecopy.png
+              --debug
+              --unstripped
+              --trace-execution
 
     steps:
       - name: Checkout source code
