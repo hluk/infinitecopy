@@ -1,6 +1,6 @@
 import logging
 
-from infinitecopy import Plugin
+from infinitecopy import Plugin, formats
 
 SECRET_FORMATS = [
     "x-kde-passwordManagerHint",
@@ -10,7 +10,26 @@ SECRET_FORMATS = [
 logger = logging.getLogger(__name__)
 
 
+class AvoidSpuriousChangesPlugin(Plugin):
+    """
+    Avoids processing spurious clipboard/selection change events.
+    """
+
+    def __init__(self, app):
+        super().__init__(app)
+        self.lastData = {}
+
+    def onClipboardChanged(self, data):
+        source = data.get(formats.mimeSource)
+        if self.lastData.get(source) == data:
+            return False
+
+        self.lastData[source] = data
+
+
 class IgnoreSecretsPlugin(Plugin):
+    """Stops processing secrets and passwords."""
+
     def __init__(self, app):
         super().__init__(app)
         app.clipboard.formats.extend(SECRET_FORMATS)
