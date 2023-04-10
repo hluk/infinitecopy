@@ -41,7 +41,7 @@ Item {
 
         Image {
             source: hasImage ? 'image://items/' + index : ''
-            width: hasImage ? Math.min(sourceSize.width, delegate.parent.width - rowNumberText.width - copyTimeText.width - 3 * spacing) : 0
+            width: hasImage ? Math.min(sourceSize.width, delegate.parent.width - rowNumberText.width - createdTimeText.width - 3 * spacing) : 0
             fillMode: Image.PreserveAspectFit
         }
 
@@ -56,8 +56,8 @@ Item {
         }
 
         ClipboardItemCopyTime {
-            id: copyTimeText
-            text: copyTime ? new Date(copyTime) : ''
+            id: createdTimeText
+            text: createdTime ? new Date(createdTime) : ''
         }
     }
 }

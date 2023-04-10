@@ -3,6 +3,8 @@ from PySide6.QtCore import Property, QMimeData, QObject, QTimer, Signal, Slot
 from PySide6.QtGui import QClipboard, QGuiApplication
 from PySide6.QtQml import QJSValue
 
+import infinitecopy.MimeFormats as formats
+
 
 class Clipboard(QObject):
     changed = Signal(dict)
@@ -37,18 +39,20 @@ class Clipboard(QObject):
                 self.selectionTimer.stop()
 
     def onClipboardChangedAfterDelay(self):
-        self.emitChanged(QClipboard.Clipboard)
+        self.emitChanged(QClipboard.Clipboard, formats.valueSourceClipboard)
 
     def onSelectionChangedAfterDelay(self):
-        self.emitChanged(QClipboard.Selection)
+        self.emitChanged(QClipboard.Selection, formats.valueSourceSelection)
 
-    def emitChanged(self, mode):
+    def emitChanged(self, mode, source):
         clipboard = QGuiApplication.clipboard()
         mimeData = clipboard.mimeData()
-        data = {}
-        for format in self.formats:
-            if mimeData.hasFormat(format):
-                data[format] = mimeData.data(format)
+        data = {
+            format: mimeData.data(format)
+            for format in self.formats
+            if mimeData.hasFormat(format)
+        }
+        data[formats.mimeSource] = source
         self.changed.emit(data)
 
     @Property(str)

@@ -17,7 +17,6 @@ from PySide6.QtQml import QJSValue
 
 import infinitecopy.MimeFormats as formats
 
-OWN_FORMAT = "application/x-infinitcopy-owner"
 PROCESS_START_TIMEOUT_MS = 5000
 PROCESS_FINISH_TIMEOUT_MS = 5000
 
@@ -105,7 +104,7 @@ def ownsSelection():
 
 
 def owns(args):
-    return not clipboardData(OWN_FORMAT, args).isEmpty()
+    return not clipboardData(formats.mimeOwner, args).isEmpty()
 
 
 def clipboardData(format_, args):
@@ -232,12 +231,12 @@ class WaylandClipboard(QObject):
             self.selectionTimer.start()
 
     def onClipboardChangedAfterDelay(self):
-        self.emitChanged([])
+        self.emitChanged([], formats.valueSourceClipboard)
 
     def onSelectionChangedAfterDelay(self):
-        self.emitChanged(["--primary"])
+        self.emitChanged(["--primary"], formats.valueSourceSelection)
 
-    def emitChanged(self, args):
+    def emitChanged(self, args, source):
         data = {}
         processes = [
             (format_, ClipboardDataProcess(format_, args))
@@ -249,8 +248,8 @@ class WaylandClipboard(QObject):
             if not bytes_.isEmpty():
                 data[format_] = bytes_
 
-        if data:
-            self.changed.emit(data)
+        data[formats.mimeSource] = source
+        self.changed.emit(data)
 
     @Property(str)
     def text(self):
@@ -259,7 +258,7 @@ class WaylandClipboard(QObject):
 
     @text.setter
     def text(self, text):
-        return setClipboardData(OWN_FORMAT, b"1") and setClipboardData(
+        return setClipboardData(formats.mimeOwner, b"1") and setClipboardData(
             formats.mimeText, text.encode("utf-8")
         )
 

@@ -6,21 +6,28 @@ from PySide6.QtSql import QSqlQuery, QSqlTableModel
 
 import infinitecopy.MimeFormats as formats
 
-COLUMN_TEXT = 2
+FORMAT_TO_ITEM_COLUMN_MAP = {
+    formats.mimeText: ":text",
+    formats.mimeSource: ":source",
+}
+
+COLUMN_TEXT = 3
 SQL_CREATE_TABLE_ITEM = """
 CREATE TABLE IF NOT EXISTS item (
-    copyTime TIMESTAMP NOT NULL,
-    itemHash TEXT PRIMARY KEY ON CONFLICT REPLACE,
-    itemText TEXT
-) WITHOUT ROWID;
+    id INTEGER PRIMARY KEY,
+    createdTime TIMESTAMP NOT NULL,
+    hash TEXT,
+    text TEXT,
+    source TEXT
+);
 """
 
 SQL_CREATE_TABLE_DATA = """
 CREATE TABLE IF NOT EXISTS data (
-    itemHash TEXT NOT NULL,
+    itemId INTEGER NOT NULL,
     format TEXT NOT NULL,
     bytes BLOB NOT NULL,
-    FOREIGN KEY(itemHash) REFERENCES item(itemHash)
+    FOREIGN KEY(itemId) REFERENCES item(id)
         ON DELETE CASCADE
 );
 """
@@ -29,25 +36,29 @@ SQL_CREATE_DB = [
     "PRAGMA foreign_keys = ON;",
     SQL_CREATE_TABLE_ITEM,
     SQL_CREATE_TABLE_DATA,
-    "CREATE INDEX IF NOT EXISTS index_item_text ON item (itemText);",
-    "CREATE INDEX IF NOT EXISTS index_data_itemHash ON data (itemHash);",
+    "CREATE INDEX IF NOT EXISTS index_item_text ON item (text);",
+    "CREATE INDEX IF NOT EXISTS index_item_hash ON item (hash);",
+    "CREATE INDEX IF NOT EXISTS index_data_item_id ON data (itemId);",
 ]
 
 SQL_SELECT_DATA = (
-    "SELECT bytes FROM data WHERE itemHash = :itemHash AND format = :format;"
+    "SELECT bytes FROM data WHERE itemId = :id AND format = :format;"
 )
 
 SQL_SELECT_FORMAT_AND_DATA = (
-    "SELECT format, bytes FROM data WHERE itemHash = :itemHash;"
+    "SELECT format, bytes FROM data WHERE itemId = :id;"
 )
 
-SQL_SELECT_HAS_IMAGE = (
-    "SELECT 1 FROM data WHERE itemHash = :itemHash AND format = :format;"
+SQL_HAS_FORMAT = "SELECT 1 FROM data WHERE itemId = :id AND format = :format;"
+
+SQL_INSERT_ITEM = (
+    "INSERT INTO item (createdTime, hash, text, source)"
+    " VALUES (:createdTime, :hash, :text, :source);"
 )
 
 SQL_INSERT_DATA = (
-    "INSERT INTO data (itemHash, format, bytes)"
-    " VALUES (:itemHash, :format, :bytes);"
+    "INSERT INTO data (itemId, format, bytes)"
+    " VALUES (:itemId, :format, :bytes);"
 )
 
 
@@ -55,6 +66,9 @@ def createHash(data):
     hash_ = hashlib.sha256()
 
     for format_ in data:
+        if format_.startswith(formats.mimePrefixInternal):
+            continue
+
         hash_.update(format_.encode("utf-8"))
         hash_.update(b";;")
         hash_.update(data[format_])
@@ -104,7 +118,11 @@ class ClipboardItemModel(QSqlTableModel):
 
     def addItemNoEmpty(self, data):
         # Ignore empty data.
-        if all(d.trimmed().length() == 0 for d in data.values()):
+        if all(
+            f.startswith(formats.mimePrefixInternal)
+            or d.trimmed().length() == 0
+            for f, d in data.items()
+        ):
             return
 
         self.beginTransaction()
@@ -119,25 +137,23 @@ class ClipboardItemModel(QSqlTableModel):
 
         self.lastAddedHash = itemHash
 
-        text = data.get(formats.mimeText, QByteArray())
-
-        record = self.record()
-        record.setValue("itemHash", itemHash)
-        record.setValue("itemText", text)
-        record.setValue("copyTime", QDateTime.currentDateTime())
-
-        if not self.insertRecord(0, record):
-            raise ValueError(
-                f"Failed to insert item: {self.lastError().text()}"
-            )
+        query = QSqlQuery(self.database())
+        prepareQuery(query, SQL_INSERT_ITEM)
+        query.bindValue(":hash", itemHash)
+        query.bindValue(":createdTime", QDateTime.currentDateTime())
+        for format_, column in FORMAT_TO_ITEM_COLUMN_MAP.items():
+            value = data.get(format_, QByteArray())
+            query.bindValue(column, value)
+        executeQuery(query)
+        itemId = query.lastInsertId()
 
         for format_, bytes_ in data.items():
-            if format_ == formats.mimeText:
+            if format_ in FORMAT_TO_ITEM_COLUMN_MAP:
                 continue
 
             query = QSqlQuery(self.database())
             prepareQuery(query, SQL_INSERT_DATA)
-            query.bindValue(":itemHash", itemHash)
+            query.bindValue(":itemId", itemId)
             query.bindValue(":format", format_)
             query.bindValue(":bytes", bytes_)
             executeQuery(query)
@@ -168,8 +184,12 @@ class ClipboardItemModel(QSqlTableModel):
         self.roles = super().roleNames()
         role = Qt.UserRole + 1
 
-        self.copyTimeRole = role
-        self.roles[role] = b"copyTime"
+        self.itemIdRole = role
+        self.roles[role] = b"itemId"
+        role += 1
+
+        self.createdTimeRole = role
+        self.roles[role] = b"createdTime"
         role += 1
 
         self.itemTextRole = role
@@ -188,6 +208,14 @@ class ClipboardItemModel(QSqlTableModel):
         self.roles[role] = b"itemData"
         role += 1
 
+        self.itemSourceRole = role
+        self.roles[role] = b"itemSource"
+        role += 1
+
+        self.itemHashRole = role
+        self.roles[role] = b"itemHash"
+        role += 1
+
     def roleNames(self):
         return self.roles
 
@@ -197,35 +225,43 @@ class ClipboardItemModel(QSqlTableModel):
 
         record = self.record(index.row())
 
-        if role == self.copyTimeRole:
-            return record.value("copyTime")
+        if role == self.itemIdRole:
+            return record.value("id")
+
+        if role == self.createdTimeRole:
+            return record.value("createdTime")
 
         if role == self.itemTextRole:
-            return record.value("itemText")
+            return record.value("text")
+
+        if role == self.itemHashRole:
+            return record.value("hash")
+
+        if role == self.itemSourceRole:
+            return record.value("source")
 
         if role == self.itemHtmlRole:
-            query = QSqlQuery(self.database())
-            prepareQuery(query, SQL_SELECT_DATA)
-            query.bindValue(":itemHash", record.value("itemHash"))
-            query.bindValue(":format", formats.mimeHtml)
-            executeQuery(query)
+            query = self.executeQuery(
+                SQL_SELECT_DATA,
+                id=record.value("id"),
+                format=formats.mimeHtml,
+            )
             if query.next():
                 return query.value("bytes")
             return ""
 
         if role == self.itemHasImageRole:
-            query = QSqlQuery(self.database())
-            prepareQuery(query, SQL_SELECT_HAS_IMAGE)
-            query.bindValue(":itemHash", record.value("itemHash"))
-            query.bindValue(":format", formats.mimePng)
-            executeQuery(query)
+            query = self.executeQuery(
+                SQL_SELECT_DATA,
+                id=record.value("id"),
+                format=formats.mimePng,
+            )
             return query.next()
 
         if role == self.itemDataRole:
-            query = QSqlQuery(self.database())
-            prepareQuery(query, SQL_SELECT_FORMAT_AND_DATA)
-            query.bindValue(":itemHash", record.value("itemHash"))
-            executeQuery(query)
+            query = self.executeQuery(
+                SQL_SELECT_FORMAT_AND_DATA, id=record.value("id")
+            )
             data = {}
             while query.next():
                 data[query.value("format")] = query.value("bytes")
@@ -235,11 +271,17 @@ class ClipboardItemModel(QSqlTableModel):
 
     def imageData(self, row):
         record = self.record(row)
-        query = QSqlQuery(self.database())
-        prepareQuery(query, SQL_SELECT_DATA)
-        query.bindValue(":itemHash", record.value("itemHash"))
-        query.bindValue(":format", formats.mimePng)
-        executeQuery(query)
+        query = self.executeQuery(
+            SQL_SELECT_DATA, id=record.value("id"), format=formats.mimePng
+        )
         if query.next():
             return query.value(0)
         return None
+
+    def executeQuery(self, queryText: str, **kwargs):
+        query = QSqlQuery(self.database())
+        prepareQuery(query, queryText)
+        for name, value in kwargs.items():
+            query.bindValue(f":{name}", value)
+        executeQuery(query)
+        return query
