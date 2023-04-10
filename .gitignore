@@ -154,3 +154,9 @@ Session.vim
 tags
 
 # End of https://www.gitignore.io/api/python,vim,qt,qml
+
+# Nuitka
+/infinitecopy.bin
+/infinitecopy.build
+/infinitecopy.dist
+/infinitecopy.onefile-build

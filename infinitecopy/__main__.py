@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
 import argparse
 import getpass
+import logging
+import os
 import signal
 import sys
 from pathlib import Path
@@ -14,6 +16,8 @@ from infinitecopy.Client import Client
 
 APPLICATION_NAME = "InfiniteCopy"
 
+logger = logging.getLogger(__name__)
+
 
 def parseArguments(args=None):
     parser = argparse.ArgumentParser(
@@ -25,6 +29,23 @@ def parseArguments(args=None):
         "--version",
         action="version",
         version=f"{APPLICATION_NAME} {__version__}",
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        default=os.getenv("INFINITECOPY_DEBUG") == "1",
+        help="Enable debug logs",
+    )
+    parser.add_argument(
+        "--no-paste",
+        action="store_true",
+        default=os.getenv("INFINITECOPY_NO_PASTE") == "1",
+        help="Disable pasting clipboard from the app",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Enable verbose logs",
     )
     parser.add_argument(
         QCoreApplication.translate("main", "commands"),
@@ -44,7 +65,7 @@ def createDbPath():
         raise SystemExit(f"Failed to create data directory {dataPath}")
 
     dbPath = Path(dataPath, "infinitecopy_items.sql")
-    print(f'Using item database "{dbPath}"', file=sys.stderr)
+    logger.info("Using item database %r", dbPath)
     return str(dbPath)
 
 
@@ -77,8 +98,14 @@ def main():
     # Force exit app on SIGINT.
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
+    args = parseArguments()
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+    elif args.verbose:
+        logging.basicConfig(level=logging.INFO)
+
     serverName = f"{APPLICATION_NAME}_{getpass.getuser()}"
-    if handleClient(serverName, parseArguments()):
+    if handleClient(serverName, args):
         return
 
     try:
@@ -87,6 +114,7 @@ def main():
             version=__version__,
             dbPath=createDbPath(),
             serverName=serverName,
+            enable_pasting=not args.no_paste,
             args=sys.argv,
         )
     except ApplicationError as e:

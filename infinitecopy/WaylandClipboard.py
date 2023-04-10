@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
+import logging
+
 from PySide6.QtCore import (
     Property,
     QByteArray,
@@ -10,8 +12,6 @@ from PySide6.QtCore import (
     QTimer,
     Signal,
     Slot,
-    qCritical,
-    qWarning,
 )
 from PySide6.QtQml import QJSValue
 
@@ -25,6 +25,8 @@ IGNORED_WL_PASTE_ERRORS = [
     "No suitable type of content copied",
     "No selection",
 ]
+
+logger = logging.getLogger(__name__)
 
 
 def isFinished(process, timeout):
@@ -46,8 +48,10 @@ def waitForFinished(process):
     if isFinished(process, 0):
         return True
 
-    qWarning(
-        f"Process timeout: {process.program()} {' '.join(process.arguments())}"
+    logger.warning(
+        "Process timeout: %s %s",
+        process.program(),
+        " ".join(process.arguments()),
     )
 
     process.terminate()
@@ -60,24 +64,32 @@ def waitForFinished(process):
     return False
 
 
-def startWlPasteProcess(args, slot):
+def logPasteErrorOutput(process):
+    err = bytes(process.readAllStandardError()).decode("utf-8").strip()
+    if err not in IGNORED_WL_PASTE_ERRORS:
+        logger.warning("wl-paste: %s", err)
+
+
+def logCopyErrorOutput(process):
+    err = bytes(process.readAllStandardError()).decode("utf-8").strip()
+    logger.warning("wl-copy: %s", err)
+
+
+def startWlPasteProcess(args, slot, name):
     process = QProcess()
 
     def changed():
+        logger.debug("%s changed", name)
         process.readAllStandardOutput()
         slot()
 
-    def readErrorOutput():
-        err = bytes(process.readAllStandardError()).decode("utf-8").strip()
-        qWarning(f"wl-paste: {err}")
-
     process.readyReadStandardOutput.connect(changed)
-    process.readyReadStandardError.connect(readErrorOutput)
+    process.readyReadStandardError.connect(logPasteErrorOutput)
     process.start("wl-paste", ["--watch", "echo"] + args, QIODevice.ReadOnly)
     if not process.waitForStarted(PROCESS_START_TIMEOUT_MS):
-        qCritical(
-            "Failed to start clipboard monitoring with wl-paste: "
-            f"{process.errorString()}"
+        logger.critical(
+            "Failed to start clipboard monitoring with wl-paste: %s",
+            process.errorString(),
         )
         return None
 
@@ -107,7 +119,7 @@ def setClipboardData(format_, bytes_):
 
 
 def clearClipboardData():
-    process = ClipboardSetterProcess(["--clear"])
+    process = ClipboardSetterProcess(["--clear"], None)
     return process.waitForFinished()
 
 
@@ -116,28 +128,22 @@ class ClipboardDataProcess:
         self.process = QProcess()
         self.out = QByteArray()
 
-        self.process.readyReadStandardOutput.connect(self.readOutput)
-        self.process.readyReadStandardError.connect(self.readErrorOutput)
+        self.process.readyReadStandardOutput.connect(
+            lambda: self.out.append(self.process.readAllStandardOutput())
+        )
+        self.process.readyReadStandardError.connect(
+            lambda: logPasteErrorOutput(self.process)
+        )
 
         self.process.start(
             "wl-paste", ["--type", format_] + args, QIODevice.ReadOnly
         )
 
         if not self.process.waitForStarted(PROCESS_START_TIMEOUT_MS):
-            qCritical(
-                "Failed to get clipboard with wl-paste: "
-                f"{self.process.errorString()}"
+            logger.critical(
+                "Failed to get clipboard with wl-paste: %s",
+                self.process.errorString(),
             )
-
-    def readOutput(self):
-        self.out.append(self.process.readAllStandardOutput())
-
-    def readErrorOutput(self):
-        err = (
-            bytes(self.process.readAllStandardError()).decode("utf-8").strip()
-        )
-        if err not in IGNORED_WL_PASTE_ERRORS:
-            qWarning(f"wl-paste: {err}")
 
     def output(self):
         waitForFinished(self.process)
@@ -150,29 +156,25 @@ class ClipboardDataProcess:
 
 
 class ClipboardSetterProcess:
-    def __init__(self, args, bytes_=None):
+    def __init__(self, args, bytes_):
         self.process = QProcess()
 
-        self.process.readyReadStandardError.connect(self.readErrorOutput)
+        self.process.readyReadStandardError.connect(
+            lambda: logCopyErrorOutput(self.process)
+        )
         self.process.closeReadChannel(QProcess.StandardOutput)
 
         self.process.start("wl-copy", args, QIODevice.ReadWrite)
 
         if not self.process.waitForStarted(PROCESS_START_TIMEOUT_MS):
-            qCritical(
-                "Failed to set clipboard with wl-copy: "
-                f"{self.process.errorString()}"
+            logger.critical(
+                "Failed to set clipboard with wl-copy: %s",
+                self.process.errorString(),
             )
         else:
             if bytes_:
                 self.process.write(bytes_)
             self.process.closeWriteChannel()
-
-    def readErrorOutput(self):
-        err = (
-            bytes(self.process.readAllStandardError()).decode("utf-8").strip()
-        )
-        qWarning(f"wl-copy: {err}")
 
     def waitForFinished(self):
         return waitForFinished(self.process)
@@ -196,13 +198,20 @@ class WaylandClipboard(QObject):
 
         self.formats = config.formats
 
-        clipboardProcess = startWlPasteProcess([], self.onClipboardChanged)
+        clipboardProcess = startWlPasteProcess(
+            [], self.onClipboardChanged, "clipboard"
+        )
         selectionProcess = startWlPasteProcess(
-            ["--primary"], self.onSelectionChanged
+            ["--primary"], self.onSelectionChanged, "selection"
         )
         self.processes = [p for p in (clipboardProcess, selectionProcess) if p]
 
         QCoreApplication.instance().aboutToQuit.connect(self.onAboutToQuit)
+
+    def isOk(self):
+        return self.processes and all(
+            p and p.state() == QProcess.Running for p in self.processes
+        )
 
     def onAboutToQuit(self):
         for process in self.processes:
@@ -245,7 +254,8 @@ class WaylandClipboard(QObject):
 
     @Property(str)
     def text(self):
-        return bytes(clipboardData(formats.mimeText, [])).decode("utf-8")
+        data = clipboardData(formats.mimeText, [])
+        return bytes(data).decode("utf-8")
 
     @text.setter
     def text(self, text):
