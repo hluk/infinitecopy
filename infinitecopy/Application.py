@@ -105,10 +105,12 @@ class Application:
             self.view.hide()
             self.view.show()
         elif commands[0] == "add":
+            self.clipboardItemModel.beginTransaction()
             for text in commands[1:]:
                 self.clipboardItemModel.addItemNoCommit(
                     {formats.mimeText: QByteArray(text.encode("utf-8"))}
                 )
+            self.clipboardItemModel.endTransaction()
             self.clipboardItemModel.submitChanges()
         elif commands[0] == "paste":
             if self.paster is None:
