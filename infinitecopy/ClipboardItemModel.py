@@ -262,9 +262,15 @@ class ClipboardItemModel(QSqlTableModel):
             query = self.executeQuery(
                 SQL_SELECT_FORMAT_AND_DATA, id=record.value("id")
             )
+
             data = {}
             while query.next():
                 data[query.value("format")] = query.value("bytes")
+
+            text = record.value("text")
+            if text:
+                data[formats.mimeText] = text
+
             return data
 
         return None
