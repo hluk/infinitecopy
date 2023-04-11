@@ -28,15 +28,9 @@ class Clipboard(QObject):
 
     def onClipboardChanged(self, mode):
         if mode == QClipboard.Clipboard:
-            if not QGuiApplication.clipboard().ownsClipboard():
-                self.clipboardTimer.start()
-            else:
-                self.clipboardTimer.stop()
+            self.clipboardTimer.start()
         elif mode == QClipboard.Selection:
-            if not QGuiApplication.clipboard().ownsSelection():
-                self.selectionTimer.start()
-            else:
-                self.selectionTimer.stop()
+            self.selectionTimer.start()
 
     def onClipboardChangedAfterDelay(self):
         self.emitChanged(QClipboard.Clipboard, formats.valueSourceClipboard)
@@ -62,13 +56,13 @@ class Clipboard(QObject):
 
     @text.setter
     def text(self, text):
-        clipboard = QGuiApplication.clipboard()
-        return clipboard.setText(text)
+        self.setData({formats.mimeText: text.encode("utf-8")})
 
     @Slot(QJSValue)
     def setData(self, value):
         data = value.toVariant()
         mimeData = QMimeData()
+        mimeData.setData(formats.mimeOwner, b"1")
         for format_, bytes_ in data.items():
             mimeData.setData(format_, bytes_)
         clipboard = QGuiApplication.clipboard()

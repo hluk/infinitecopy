@@ -95,18 +95,6 @@ def startWlPasteProcess(args, slot, name):
     return process
 
 
-def ownsClipboard():
-    return owns([])
-
-
-def ownsSelection():
-    return owns(["--primary"])
-
-
-def owns(args):
-    return not clipboardData(formats.mimeOwner, args).isEmpty()
-
-
 def clipboardData(format_, args):
     process = ClipboardDataProcess(format_, args)
     return process.output()
@@ -219,16 +207,10 @@ class WaylandClipboard(QObject):
             waitForFinished(process)
 
     def onClipboardChanged(self):
-        if ownsClipboard():
-            self.clipboardTimer.stop()
-        else:
-            self.clipboardTimer.start()
+        self.clipboardTimer.start()
 
     def onSelectionChanged(self):
-        if ownsSelection():
-            self.selectionTimer.stop()
-        else:
-            self.selectionTimer.start()
+        self.selectionTimer.start()
 
     def onClipboardChangedAfterDelay(self):
         self.emitChanged([], formats.valueSourceClipboard)
@@ -266,6 +248,7 @@ class WaylandClipboard(QObject):
     def setData(self, value):
         clearClipboardData()
         data = value.toVariant()
+        setClipboardData(formats.mimeOwner, b"1")
         processes = [
             ClipboardSetterProcess(["--type", format_], bytes_)
             for format_, bytes_ in data.items()
