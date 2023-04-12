@@ -22,6 +22,7 @@ class Paster(QObject):
         self.monitor_thread.started.connect(self.monitor.start)
         self.monitor.text_entry_focused.connect(self._on_text_entry_focused)
         self.monitor_thread.start()
+        self.key_event = self.monitor.key_event
         QCoreApplication.instance().aboutToQuit.connect(self._stop)
 
     @Slot(str)
