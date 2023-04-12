@@ -87,6 +87,8 @@ class Application:
 
         self.plugin_manager = PluginManager(self)
         self.clipboard.changed.connect(self.plugin_manager.onClipboardChanged)
+        if self.paster:
+            self.paster.key_event.connect(self.plugin_manager.onKeyEvent)
 
     def setIcon(self, iconPath):
         self.app.setWindowIcon(QIcon(iconPath))

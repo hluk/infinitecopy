@@ -4,3 +4,6 @@ class Plugin:
 
     def onClipboardChanged(self, data):
         pass
+
+    def onKeyEvent(self, event):
+        pass

@@ -78,3 +78,9 @@ class PluginManager:
                 return
 
         self.app.clipboardItemModel.addItemNoEmpty(data)
+
+    def onKeyEvent(self, event):
+        for plugin in self.plugins:
+            if plugin.onKeyEvent(event) is True:
+                event.consumed = True
+                return
