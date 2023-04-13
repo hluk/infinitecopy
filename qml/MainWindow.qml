@@ -64,14 +64,14 @@ ColumnLayout {
 
         // Copy item action
         Shortcut {
-            sequence: 'Enter'
+            sequence: 'Shift+Enter'
             onActivated: {
                 view.hide()
                 clipboard.setData(clipboardItemView.currentItem.dataDict)
             }
         }
         Shortcut {
-            sequence: 'Return'
+            sequence: 'Shift+Return'
             onActivated: {
                 view.hide()
                 clipboard.setData(clipboardItemView.currentItem.dataDict)
@@ -84,22 +84,22 @@ ColumnLayout {
             }
         }
 
-        // Paste text
+        // Paste or copy text
         Shortcut {
-            sequence: 'Shift+Enter'
+            sequence: 'Enter'
             onActivated: {
-                if (paster) {
-                    view.hide()
-                    paster.paste(clipboardItemView.currentItem.text)
+                view.hide()
+                if (!paster || !paster.paste(clipboardItemView.currentItem.text)) {
+                    clipboard.setData(clipboardItemView.currentItem.dataDict)
                 }
             }
         }
         Shortcut {
-            sequence: 'Shift+Return'
+            sequence: 'Return'
             onActivated: {
-                if (paster) {
-                    view.hide()
-                    paster.paste(clipboardItemView.currentItem.text)
+                view.hide()
+                if (!paster || !paster.paste(clipboardItemView.currentItem.text)) {
+                    clipboard.setData(clipboardItemView.currentItem.dataDict)
                 }
             }
         }
