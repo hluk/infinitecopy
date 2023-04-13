@@ -197,10 +197,14 @@ ColumnLayout {
         Shortcut {
             sequence: 'Escape'
             onActivated: {
-                filterTextField.text = ""
-                if (clipboardItemView.count > 0) {
-                    clipboardItemView.currentIndex = -1
-                    clipboardItemView.currentIndex = 0
+                if (filterTextField.text == "") {
+                  view.hide()
+                } else {
+                  filterTextField.text = ""
+                  if (clipboardItemView.count > 0) {
+                      clipboardItemView.currentIndex = -1
+                      clipboardItemView.currentIndex = 0
+                  }
                 }
             }
         }
