@@ -10,6 +10,7 @@ ColumnLayout {
 
     FilterTextField {
         id: filterTextField
+        z: 2
 
         Accessible.description: "filter items text field"
 
@@ -22,6 +23,7 @@ ColumnLayout {
 
     ClipboardItemView {
         id: clipboardItemView
+        z: 1
 
         Accessible.name: "item list"
 
