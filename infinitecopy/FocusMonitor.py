@@ -128,14 +128,16 @@ class FocusMonitor(QObject):
                 event.source.name,
                 event.source.role,
             )
+            self.has_focus = True
             self.text_entry_focused.emit(event.source)
-        else:
+        elif self.has_focus:
             logger.debug(
                 "No focus source: source: %r, focused: %r, role: %r",
                 event.source.name,
                 is_focused,
                 event.source.role,
             )
+            self.has_focus = False
             self.text_entry_focused.emit(None)
 
     def _on_key_press(self, event):
