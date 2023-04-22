@@ -85,12 +85,17 @@ def setUpPaths(app):
 
 def handleClient(serverName, args):
     client = Client()
+
     if not client.connect(serverName):
         if args.commands:
             raise SystemExit("Start the application before using a command")
         return False
 
-    client.send(args.commands or ["show"])
+    commands = args.commands or ["show"]
+    for command in commands:
+        client.stream.writeQVariant(command)
+
+    client.waitForDisconnected()
     return True
 
 

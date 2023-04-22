@@ -1,17 +1,17 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
 import logging
 
-from PySide6.QtCore import QByteArray, QSortFilterProxyModel, QUrl
+from PySide6.QtCore import QSortFilterProxyModel, QUrl
 from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQuick import QQuickView
 from PySide6.QtSql import QSqlDatabase
 
-import infinitecopy.MimeFormats as formats
 from infinitecopy.ClipboardFactory import createClipboard
 from infinitecopy.ClipboardItemModel import COLUMN_TEXT, ClipboardItemModel
 from infinitecopy.ClipboardItemModelImageProvider import (
     ClipboardItemModelImageProvider,
 )
+from infinitecopy.CommandHandler import CommandHandler
 from infinitecopy.PluginManager import PluginManager
 from infinitecopy.Server import Server
 
@@ -83,7 +83,8 @@ class Application:
 
         self.engine.quit.connect(QGuiApplication.quit)
 
-        self.server.messageReceived.connect(self._on_message)
+        self.command_handler = CommandHandler(self)
+        self.server.messageReceived.connect(self.command_handler.receive)
 
         self.plugin_manager = PluginManager(self)
         self.clipboard.changed.connect(self.plugin_manager.onClipboardChanged)
@@ -100,28 +101,3 @@ class Application:
     def exec_(self):
         self.view.show()
         return self.app.exec_()
-
-    def _on_message(self, commands):
-        if commands == ["show"]:
-            logger.debug("Activating window")
-            self.view.hide()
-            self.view.show()
-        elif commands[0] == "add":
-            self.clipboardItemModel.beginTransaction()
-            for text in commands[1:]:
-                self.clipboardItemModel.addItemNoCommit(
-                    {formats.mimeText: QByteArray(text.encode("utf-8"))}
-                )
-            self.clipboardItemModel.endTransaction()
-            self.clipboardItemModel.submitChanges()
-        elif commands[0] == "paste":
-            if self.paster is None:
-                logger.warning("Pasting text is unsupported")
-            else:
-                logger.info("Pasting text")
-                for text in commands[1:]:
-                    if not self.paster.paste(text):
-                        logger.warning("Failed to paste text")
-                        break
-        else:
-            logger.warning(f"Unknown message received: {commands}")
