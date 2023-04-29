@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
 import hashlib
 
-from PySide6.QtCore import QByteArray, QDateTime, Qt, Slot
+from PySide6.QtCore import Property, QByteArray, QDateTime, Qt, Slot
 from PySide6.QtSql import QSqlQuery, QSqlTableModel
 
 import infinitecopy.MimeFormats as formats
@@ -11,13 +11,14 @@ FORMAT_TO_ITEM_COLUMN_MAP = {
     formats.mimeSource: ":source",
 }
 
-COLUMN_TEXT = 3
-SQL_CREATE_TABLE_ITEM = """
+COLUMN_HASH = "hash"
+COLUMN_TEXT = "text"
+SQL_CREATE_TABLE_ITEM = f"""
 CREATE TABLE IF NOT EXISTS item (
     id INTEGER PRIMARY KEY,
     createdTime TIMESTAMP NOT NULL,
-    hash TEXT,
-    text TEXT,
+    {COLUMN_HASH} TEXT,
+    {COLUMN_TEXT} TEXT,
     source TEXT
 );
 """
@@ -102,6 +103,14 @@ class ClipboardItemModel(QSqlTableModel):
         self.lastAddedHash = ""
         self.generateRoleNames()
 
+    @Property(int)
+    def textColumn(self):
+        return self.fieldIndex(COLUMN_TEXT)
+
+    @Property(int)
+    def hashColumn(self):
+        return self.fieldIndex(COLUMN_HASH)
+
     def create(self):
         self.beginTransaction()
 
@@ -175,9 +184,9 @@ class ClipboardItemModel(QSqlTableModel):
                 f"Failed submit queries: {self.lastError().text()}"
             )
 
-    @Slot(int)
-    def removeItem(self, row):
-        if self.removeRow(row):
+    @Slot(int, int)
+    def removeItems(self, row, count):
+        if self.removeRows(row, count):
             self.submitChanges()
 
     def generateRoleNames(self):

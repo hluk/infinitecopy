@@ -7,7 +7,7 @@ from PySide6.QtQuick import QQuickView
 from PySide6.QtSql import QSqlDatabase
 
 from infinitecopy.ClipboardFactory import createClipboard
-from infinitecopy.ClipboardItemModel import COLUMN_TEXT, ClipboardItemModel
+from infinitecopy.ClipboardItemModel import ClipboardItemModel
 from infinitecopy.ClipboardItemModelImageProvider import (
     ClipboardItemModelImageProvider,
 )
@@ -57,7 +57,8 @@ class Application:
 
         self.filterProxyModel = QSortFilterProxyModel()
         self.filterProxyModel.setSourceModel(self.clipboardItemModel)
-        self.filterProxyModel.setFilterKeyColumn(COLUMN_TEXT)
+        text_column = self.clipboardItemModel.textColumn
+        self.filterProxyModel.setFilterKeyColumn(text_column)
 
         self.clipboard = createClipboard()
 
