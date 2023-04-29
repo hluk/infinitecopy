@@ -32,7 +32,41 @@ ColumnLayout {
 
         model: clipboardItemModelFilterProxy
 
-        spacing: 10
+        // Keep a row selected after list updates.
+        property int lastCurrentRow: 0
+        property string lastCurrentRowHash: ""
+        Component.onCompleted: {
+            model.modelAboutToBeReset.connect(storeSelection)
+            model.modelReset.connect(restoreSelection)
+            restoreSelection()
+        }
+        function rowHash(row) {
+            const index = clipboardItemView.index(row, clipboardItemModel.hashColumn)
+            return clipboardItemModel.data(index)
+        }
+        function storeSelection() {
+            lastCurrentRow = Math.max(0, clipboardItemView.currentRow)
+            lastCurrentRowHash = rowHash(lastCurrentRow)
+            while (lastCurrentRowHash === "" && lastCurrentRow < clipboardItemView.rows) {
+                lastCurrentRow += 1
+                lastCurrentRowHash = rowHash(lastCurrentRow)
+            }
+        }
+        function restoreSelection() {
+            var index = model.index(lastCurrentRow, 0)
+            if (lastCurrentRowHash !== "") {
+                while (index.row >= 0 && lastCurrentRowHash != rowHash(index.row)) {
+                    index = model.index(index.row + 1, 0)
+                }
+                if (index.row < 0) {
+                    index = model.index(lastCurrentRow, 0)
+                    while (index.row >= 0 && lastCurrentRowHash != rowHash(index.row)) {
+                        index = model.index(index.row - 1, 0)
+                    }
+                }
+            }
+            clipboardItemView.selectionModel.setCurrentIndex(index, ItemSelectionModel.Clear)
+        }
 
         Menu {
             id: itemContextMenu
@@ -41,16 +75,16 @@ ColumnLayout {
             MenuItem {
                 text: qsTr("&Copy")
                 icon.name: "edit-copy"
-                enabled: clipboardItemView.currentIndex >= 0
-                onTriggered: clipboard.setData(clipboardItemView.currentItem.dataDict)
+                enabled: clipboardItemView.currentRow >= 0
+                onTriggered: clipboard.setData(clipboardItemView.currentData())
             }
 
             // Delete item action
             MenuItem {
                 text: qsTr("&Delete")
                 icon.name: "edit-delete"
-                enabled: clipboardItemView.currentIndex >= 0
-                onTriggered: clipboardItemModel.removeItem(clipboardItemView.currentIndex)
+                enabled: clipboardItemView.currentRow >= 0
+                onTriggered: removeSelected()
             }
         }
 
@@ -58,8 +92,12 @@ ColumnLayout {
             anchors.fill: parent
             acceptedButtons: Qt.RightButton
             onReleased: {
-                clipboardItemView.currentIndex = clipboardItemView.indexAt(mouseX, mouseY)
-                if (clipboardItemView.currentIndex >= 0)
+                var cell = clipboardItemView.cellAtPosition(mouseX, mouseY)
+                var index = clipboardItemView.modelIndex(cell)
+                var sel = clipboardItemView.selectionModel
+                if (!sel.isSelected(index) && sel.currentIndex != index)
+                    sel.setCurrentIndex(index, ItemSelectionModel.Clear)
+                if (sel.currentIndex.row >= 0)
                     itemContextMenu.popup()
             }
         }
@@ -69,131 +107,45 @@ ColumnLayout {
             sequence: 'Shift+Enter'
             onActivated: {
                 view.hide()
-                clipboard.setData(clipboardItemView.currentItem.dataDict)
+                clipboard.setData(clipboardItemView.currentData())
             }
         }
         Shortcut {
             sequence: 'Shift+Return'
             onActivated: {
                 view.hide()
-                clipboard.setData(clipboardItemView.currentItem.dataDict)
+                clipboard.setData(clipboardItemView.currentData())
             }
         }
         Shortcut {
             sequences: [StandardKey.Copy]
             onActivated: {
-                clipboard.setData(clipboardItemView.currentItem.dataDict)
+                clipboard.setData(clipboardItemView.currentData())
             }
         }
 
         // Paste or copy text
         Shortcut {
             sequence: 'Enter'
-            onActivated: {
-                view.hide()
-                if (!paster || !paster.paste(clipboardItemView.currentItem.text)) {
-                    clipboard.setData(clipboardItemView.currentItem.dataDict)
-                }
-            }
+            onActivated: activateSelected()
         }
         Shortcut {
             sequence: 'Return'
-            onActivated: {
-                view.hide()
-                if (!paster || !paster.paste(clipboardItemView.currentItem.text)) {
-                    clipboard.setData(clipboardItemView.currentItem.dataDict)
-                }
-            }
+            onActivated: activateSelected()
         }
 
         // Item context menu shortcut
         Shortcut {
             sequence: 'Menu'
             onActivated: {
-                if (clipboardItemView.currentIndex >= 0)
+                if (clipboardItemView.currentRow >= 0)
                     itemContextMenu.popup()
-            }
-        }
-
-        // Down shortcut
-        Shortcut {
-            sequence: 'j'
-            onActivated: {
-                if (clipboardItemView.currentIndex + 1 < clipboardItemView.count)
-                    clipboardItemView.currentIndex += 1
-            }
-        }
-
-        // Up shortcut
-        Shortcut {
-            sequence: 'k'
-            onActivated: {
-                if (clipboardItemView.currentIndex > 0)
-                    clipboardItemView.currentIndex -= 1
-            }
-        }
-
-        Shortcut {
-            sequence: 'Home'
-            onActivated: {
-                if (clipboardItemView.count > 0) {
-                    clipboardItemView.currentIndex = -1
-                    clipboardItemView.currentIndex = 0
-                }
-            }
-        }
-
-        Shortcut {
-            sequence: 'End'
-            onActivated: {
-                if (clipboardItemView.count > 0) {
-                    clipboardItemView.currentIndex = -1
-                    clipboardItemView.currentIndex = clipboardItemView.count - 1
-                }
-            }
-        }
-
-        Shortcut {
-            sequence: 'PgDown'
-            onActivated: {
-                if (clipboardItemView.count > 0) {
-                    const y = clipboardItemView.contentY + clipboardItemView.height
-                    var index = clipboardItemView.indexAt(0, y)
-                    if (index == -1) {
-                        index = clipboardItemView.indexAt(0, y + clipboardItemView.spacing)
-                        if (index == -1) {
-                            index = clipboardItemView.count - 1
-                        }
-                    }
-                    clipboardItemView.currentIndex = index
-                    clipboardItemView.positionViewAtIndex(index, ListView.Beginning)
-                }
-            }
-        }
-
-        Shortcut {
-            sequence: 'PgUp'
-            onActivated: {
-                if (clipboardItemView.count > 0) {
-                    const y = clipboardItemView.contentY
-                    var index = clipboardItemView.indexAt(0, y)
-                    if (index == -1) {
-                        index = clipboardItemView.indexAt(0, y - clipboardItemView.spacing)
-                        if (index == -1) {
-                            index = clipboardItemView.count - 1
-                        }
-                    }
-                    clipboardItemView.currentIndex = index
-                    clipboardItemView.positionViewAtIndex(index, ListView.End)
-                }
             }
         }
 
         Shortcut {
             sequences: [StandardKey.Delete]
-            onActivated: {
-                clipboardItemModel.removeItem(clipboardItemView.currentIndex)
-            }
+            onActivated: removeSelected()
         }
 
         Shortcut {
@@ -203,9 +155,9 @@ ColumnLayout {
                   view.hide()
                 } else {
                   filterTextField.text = ""
-                  if (clipboardItemView.count > 0) {
-                      clipboardItemView.currentIndex = -1
-                      clipboardItemView.currentIndex = 0
+                  if (clipboardItemView.rows > 0) {
+                      clipboardItemView.currentRow = -1
+                      clipboardItemView.currentRow = 0
                   }
                 }
             }
@@ -224,5 +176,26 @@ ColumnLayout {
         sequence: StandardKey.Find
         context: Qt.ApplicationShortcut
         onActivated: filterTextField.focus = true
+    }
+
+    function activateSelected() {
+        view.hide()
+        var data = clipboardItemView.currentData()
+        var text = data["text/plain"]
+        if (!text || !paster || !paster.paste(text)) {
+            clipboard.setData(data)
+        }
+    }
+
+    function removeSelected() {
+        var sel = clipboardItemView.selectionModel
+        if (sel.selection.length == 0) {
+            clipboardItemModel.removeItems(sel.currentIndex.row, 1)
+        } else {
+            while (sel.selection.length > 0) {
+                const range = sel.selection[0]
+                clipboardItemModel.removeItems(range.top, range.height)
+            }
+        }
     }
 }

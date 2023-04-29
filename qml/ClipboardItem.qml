@@ -1,32 +1,54 @@
 // SPDX-License-Identifier: LGPL-2.0-or-later
-import QtQuick 2.7
+import QtQml
+import QtQuick
 
 Item {
     id: delegate
 
-    width: delegate.ListView.view.width
-    height: row.height
+    required property TableView view
+
+    required property int index
+    required property bool selected
+    required property bool current
+
+    property color baseTextColor: (current || selected) ? palette.highlightedText : palette.text
+
+    implicitWidth: view.width
+    implicitHeight: row.implicitHeight
 
     clip: true
     property var dataDict: itemData
     property string text: itemText
     property string html: itemHtml
 
-    Accessible.focused: index == row.id
+    Accessible.focused: current
     Accessible.name: `row ${index + 1}`
     Accessible.description: text ? `text: ${text}` : (hasImage ? "image" : "")
 
     Rectangle {
         anchors.fill: parent
-        color: index % 2 ? 'black' : 'transparent'
-        opacity: currentIndex == index ? 0 : 0.05
+        color: {
+            if (current) {
+                palette.highlight
+            } else if (selected) {
+                palette.highlight
+            } else if (view.alternatingRows && index % 2 !== 0) {
+                palette.alternateBase
+            } else {
+                palette.base
+            }
+        }
         Behavior on opacity { SmoothedAnimation { velocity: 0.2 } }
     }
 
     MouseArea {
         anchors.fill: parent
-        onClicked: currentIndex = index
         onDoubleClicked: clipboard.setData(dataDict)
+        onClicked: {
+            const index = view.model.index(delegate.index, 0)
+            view.selectionModel.setCurrentIndex(
+                index, ItemSelectionModel.Clear)
+        }
     }
 
     Row {
@@ -46,11 +68,13 @@ Item {
         }
 
         ClipboardItemHtml {
+            color: baseTextColor
             text: '[HTML] ' + html
             visible: html != ''
         }
 
         ClipboardItemText {
+            color: baseTextColor
             text: delegate.text
             visible: html == ''
         }
@@ -58,6 +82,7 @@ Item {
         ClipboardItemCopyTime {
             id: createdTimeText
             text: createdTime ? new Date(createdTime) : ''
+            color: Qt.tint(baseTextColor, "lightsteelblue")
         }
     }
 }

@@ -28,6 +28,12 @@ IGNORED_WL_PASTE_ERRORS = [
 logger = logging.getLogger(__name__)
 
 
+def toBytes(data):
+    if isinstance(data, str):
+        return data.encode("utf-8")
+    return data
+
+
 def isFinished(process, timeout):
     return process.state() == QProcess.NotRunning or process.waitForFinished(
         timeout
@@ -250,8 +256,8 @@ class WaylandClipboard(QObject):
         data = value.toVariant()
         setClipboardData(formats.mimeOwner, b"1")
         processes = [
-            ClipboardSetterProcess(["--type", format_], bytes_)
-            for format_, bytes_ in data.items()
+            ClipboardSetterProcess(["--type", format_], toBytes(data))
+            for format_, data in data.items()
         ]
         for process in processes:
             process.waitForFinished()
