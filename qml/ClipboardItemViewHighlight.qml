@@ -9,5 +9,6 @@ Rectangle {
     width: parentListView.currentItem ? parentListView.currentItem.width : 0
     height: parentListView.currentItem ? parentListView.currentItem.height : 0
     y: parentListView.currentItem ? parentListView.currentItem.y : 0
-    Behavior on y { SmoothedAnimation { duration: 100 } }
+    Behavior on y { SmoothedAnimation { duration: 50 } }
+    Behavior on height { SmoothedAnimation { duration: 200 } }
 }
