@@ -25,6 +25,7 @@ class AvoidSpuriousChangesPlugin(Plugin):
             return False
 
         self.lastData[source] = data
+        return True
 
 
 class IgnoreSecretsPlugin(Plugin):
@@ -38,3 +39,4 @@ class IgnoreSecretsPlugin(Plugin):
         if any(format in data for format in SECRET_FORMATS):
             logger.info("Ignoring copied secret")
             return False
+        return True

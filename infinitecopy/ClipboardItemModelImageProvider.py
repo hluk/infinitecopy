@@ -8,8 +8,8 @@ class ClipboardItemModelImageProvider(QQuickImageProvider):
         QQuickImageProvider.__init__(self, QQuickImageProvider.Pixmap)
         self.model = model
 
-    def requestPixmap(self, id, size, _requestedSize):
-        row = int(id)
+    def requestPixmap(self, id_, _size, _requestedSize):
+        row = int(id_)
 
         if row < 0 or row >= self.model.rowCount():
             return QPixmap()

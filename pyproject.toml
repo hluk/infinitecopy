@@ -14,10 +14,6 @@ PyGObject = [
 ]
 
 [tool.poetry.dev-dependencies]
-black = "^23.3.0"
-flake8 = "^6.0.0"
-isort = "^5.12.0"
-bandit = "^1.7.5"
 Nuitka = "^1.5.4"
 zstandard = "^0.20.0"
 imageio = [
@@ -26,6 +22,8 @@ imageio = [
 pillow = "^9.3.0"
 pyright = "^1.1.296"
 pylint = "^2.17.1"
+pytest = "^7.3.1"
+pytest-cov = "^4.0.0"
 
 [tool.poetry.scripts]
 infinitecopy = "infinitecopy.__main__:main"
@@ -34,7 +32,23 @@ infinitecopy = "infinitecopy.__main__:main"
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.pylint."MESSAGES CONTROL"]
+[tool.pylint.main]
+ignore-paths = [
+    "^tests/",
+]
+jobs=0
+
+[tool.pylint."messages control"]
 disable = [
+    "broad-exception-caught",
     "invalid-name",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "missing-module-docstring",
+    "no-name-in-module",
+    "redefined-outer-name",
+    "too-few-public-methods",
+    "too-many-instance-attributes",
+    "too-many-return-statements",
+    "wrong-import-position",
 ]

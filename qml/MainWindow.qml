@@ -46,8 +46,8 @@ ColumnLayout {
         }
         function storeSelection() {
             lastCurrentRow = Math.max(0, clipboardItemView.currentRow)
-            lastCurrentRowHash = rowHash(lastCurrentRow)
-            while (lastCurrentRowHash === "" && lastCurrentRow < clipboardItemView.rows) {
+            lastCurrentRowHash = rowHash(lastCurrentRow) || ""
+            while (lastCurrentRowHash === "" && lastCurrentRow + 1 < clipboardItemView.rows) {
                 lastCurrentRow += 1
                 lastCurrentRowHash = rowHash(lastCurrentRow)
             }

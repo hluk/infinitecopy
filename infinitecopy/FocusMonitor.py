@@ -59,6 +59,7 @@ class FocusMonitor(QObject):
         self.listener = None
         self.key_listener = None
         self.has_focus = False
+        self.text = ""
 
     def start(self):
         logger.debug("Registering listeners")

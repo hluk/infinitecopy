@@ -79,19 +79,18 @@ def createHash(data):
 
 def prepareQuery(query, queryText):
     if not query.prepare(queryText):
+        lastError = query.lastError().text()
         raise ValueError(
-            "Bad query template: {}\nLast error: {}".format(
-                queryText, query.lastError().text()
-            )
+            f"Bad query template: {queryText}\nLast error: {lastError}"
         )
 
 
 def executeQuery(query):
-    if not query.exec_():
+    if not query.exec():
+        lastQuery = query.lastQuery()
+        lastError = query.lastError().text()
         raise ValueError(
-            "Failed to execute query: {}\nLast error: {}".format(
-                query.lastQuery(), query.lastError().text()
-            )
+            f"Failed to execute query: {lastQuery}\nLast error: {lastError}"
         )
 
 

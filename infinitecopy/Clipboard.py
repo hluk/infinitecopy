@@ -40,7 +40,7 @@ class Clipboard(QObject):
 
     def emitChanged(self, mode, source):
         clipboard = QGuiApplication.clipboard()
-        mimeData = clipboard.mimeData()
+        mimeData = clipboard.mimeData(mode)
         data = {
             format: mimeData.data(format)
             for format in self.formats

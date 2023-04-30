@@ -2,6 +2,7 @@
 import logging
 
 import infinitecopy.commands
+from infinitecopy.Client import Client
 
 logger = logging.getLogger(__name__)
 
@@ -18,18 +19,19 @@ class CommandHandler:
                 self.commands[command_name] = fn
 
     def receive(self, stream, socket):
+        client = Client(socket, stream)
         try:
-            self._on_message_helper(stream, socket)
+            self._on_message_helper(client)
         except Exception as e:
             logger.info("Client failure: %s", e)
-            stream.writeQVariant(e)
+            client.sendError(str(e))
         finally:
             socket.disconnectFromServer()
 
-    def _on_message_helper(self, stream, socket):
-        command = stream.readQVariant()
-        callable = self.commands.get(command)
-        if callable:
-            callable(self.app, stream, socket)
+    def _on_message_helper(self, client):
+        command = bytes(client.receive()).decode("utf-8")
+        fn = self.commands.get(command)
+        if fn:
+            fn(self.app, client)
         else:
             raise RuntimeError(f"Unknown message received: {command}")
