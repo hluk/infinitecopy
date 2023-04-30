@@ -24,22 +24,18 @@ class ApplicationError(RuntimeError):
 
 def pasterIfAvailable():
     try:
+        # pylint: disable=import-outside-toplevel
         from infinitecopy.Paster import Paster
     except (ImportError, ValueError) as e:
-        logger.info(f"Pasting won't work: {e}")
+        logger.info("Pasting won't work: %s", e)
         return None
 
     return Paster()
 
 
 class Application:
-    def __init__(
-        self, *, name, version, dbPath, serverName, enable_pasting, args
-    ):
+    def __init__(self, *, dbPath, serverName, enable_pasting, args):
         self.app = QGuiApplication(args)
-        self.app.setApplicationName(name)
-        self.app.setApplicationDisplayName(name)
-        self.app.setApplicationVersion(version)
 
         self.server = Server()
         if not self.server.start(serverName):
@@ -49,6 +45,7 @@ class Application:
         self.db.setDatabaseName(dbPath)
         if not self.db.open():
             raise ApplicationError(self.db.lastError().text())
+        self.app.aboutToQuit.connect(self.db.close)
 
         self.view = QQuickView()
 
@@ -99,6 +96,6 @@ class Application:
         self.view.setSource(QUrl.fromLocalFile(path))
         self.view.setGeometry(100, 100, 400, 240)
 
-    def exec_(self):
+    def exec(self):
         self.view.show()
-        return self.app.exec_()
+        return self.app.exec()

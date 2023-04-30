@@ -28,9 +28,9 @@ def plugin_files():
         plugins = [f for f in plugin_dir.glob("*.py") if f.is_file()]
 
         if plugins:
-            logger.debug(f"Loading plugins from: {path}")
+            logger.debug("Loading plugins from: %s", path)
         else:
-            logger.debug(f"No plugins found in: {path}")
+            logger.debug("No plugins found in: %s", path)
 
         for plugin in sorted(plugins):
             yield plugin
@@ -55,15 +55,15 @@ def load_plugins(app):
     for plugin, module in plugin_modules():
         try:
             if "setup" in module.__dict__:
-                logger.debug(f"Loading plugin setup {plugin}")
+                logger.debug("Loading plugin setup %s", plugin)
                 module.setup(app)
 
             for name, obj in module.__dict__.items():
                 if obj != Plugin and isclass(obj) and Plugin in obj.mro():
-                    logger.debug(f"Loading plugin {name} ({plugin})")
+                    logger.debug("Loading plugin %s (%s)", name, plugin)
                     yield obj(app)
         except Exception as e:
-            logger.warning(f"Failed to load plugin {plugin}: {e}")
+            logger.warning("Failed to load plugin %s: %s", plugin, e)
             raise
 
 

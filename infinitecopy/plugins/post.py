@@ -22,14 +22,14 @@ def avoid_duplicates(app):
         if source not in AVOID_DUPLICATES_SOURCES:
             return
 
-        hash = record.value("hash")
-        if not hash:
+        hash_ = record.value("hash")
+        if not hash_:
             return
 
         keep_id = record.value("id")
         model.executeQuery(
             "DELETE FROM item WHERE hash = :hash AND id != :keep_id",
-            hash=hash,
+            hash=hash_,
             keep_id=keep_id,
         )
 

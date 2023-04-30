@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 from PySide6.QtCore import QCoreApplication, QDir, QStandardPaths
+from PySide6.QtGui import QGuiApplication
 
 from infinitecopy import __version__
 from infinitecopy.Application import Application, ApplicationError
@@ -17,6 +18,16 @@ from infinitecopy.Client import Client
 APPLICATION_NAME = "InfiniteCopy"
 
 logger = logging.getLogger(__name__)
+
+
+def appName(session):
+    if session:
+        return f"{APPLICATION_NAME}-{session}"
+    return APPLICATION_NAME
+
+
+def serverName(session):
+    return f"{appName(session)}_{getpass.getuser()}"
 
 
 def parseArguments(args=None):
@@ -29,6 +40,12 @@ def parseArguments(args=None):
         "--version",
         action="version",
         version=f"{APPLICATION_NAME} {__version__}",
+    )
+    parser.add_argument(
+        "--session",
+        type=str,
+        default=os.getenv("INFINITECOPY_SESSION"),
+        help="Session name",
     )
     parser.add_argument(
         "--debug",
@@ -83,51 +100,71 @@ def setUpPaths(app):
     app.setMainWindowQml(qml)
 
 
-def handleClient(serverName, args):
+def handleClient(server_name, args):
     client = Client()
 
-    if not client.connect(serverName):
+    if not client.connect(server_name):
         if args.commands:
             raise SystemExit("Start the application before using a command")
         return False
 
-    commands = args.commands or ["show"]
-    for command in commands:
-        client.stream.writeQVariant(command)
+    args = args.commands or ["show"]
+    stdin = None
+    for arg in args:
+        if arg == "-":
+            if stdin is None:
+                stdin = sys.stdin.buffer.read()
+            arg = stdin
+        client.send(arg)
 
     client.waitForDisconnected()
+    if client.error:
+        raise SystemExit(client.error)
+
     return True
 
 
-def main():
+def initApp(session):
+    name = appName(session)
+    QCoreApplication.setApplicationName(name)
+    QCoreApplication.setApplicationVersion(__version__)
+    QGuiApplication.setApplicationDisplayName(name)
+
+
+def createApp(args=None):
     # Force exit app on SIGINT.
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    args = parseArguments()
+    args = parseArguments(args)
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
     elif args.verbose:
         logging.basicConfig(level=logging.INFO)
 
-    serverName = f"{APPLICATION_NAME}_{getpass.getuser()}"
-    if handleClient(serverName, args):
-        return
+    initApp(args.session)
+
+    server_name = serverName(args.session)
+    if handleClient(server_name, args):
+        return None
 
     try:
         app = Application(
-            name=APPLICATION_NAME,
-            version=__version__,
             dbPath=createDbPath(),
-            serverName=serverName,
+            serverName=server_name,
             enable_pasting=not args.no_paste,
             args=sys.argv,
         )
     except ApplicationError as e:
-        raise SystemExit(f"Failed to start app: {e}")
+        raise SystemExit(f"Failed to start app: {e}") from e
 
     setUpPaths(app)
+    return app
 
-    return app.exec_()
+
+def main(args=None):
+    app = createApp(args)
+    if app:
+        app.exec()
 
 
 if __name__ == "__main__":
