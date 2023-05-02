@@ -12,10 +12,35 @@ def unescape(escaped):
     return bytes(escaped).decode("unicode_escape")
 
 
+def is_active(app):
+    return app.app.focusWindow() is not None
+
+
 def command_show(app, _client):
     logger.debug("Activating window")
     app.view.hide()
     app.view.show()
+
+
+def command_hide(app, _client):
+    logger.debug("Deactivating window")
+    app.view.hide()
+
+
+def command_toggle(app, client):
+    if is_active(app):
+        command_hide(app, client)
+    else:
+        command_show(app, client)
+
+
+def command_active(app, client):
+    if not is_active(app):
+        client.sendExit(1)
+
+
+def command_quit(app, _client):
+    app.app.quit()
 
 
 def command_add(app, client):
@@ -55,7 +80,7 @@ def command_paste(app, client):
     else:
         logger.info("Pasting text")
         while not client.atEnd():
-            text = client.receive()
+            text = bytes(client.receive()).decode("utf-8")
             if not app.paster.paste(text):
                 logger.warning("Failed to paste text")
                 break

@@ -8,6 +8,7 @@ from PySide6.QtNetwork import QLocalSocket
 CONNECTION_TIMEOUT_MS = 4000
 PRINT_COMMAND = 1
 ERROR_COMMAND = 2
+EXIT_COMMAND = 3
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,7 @@ class Client:
             self.length = None
             self.arg = None
         self.error = None
+        self.exit_code = 0
 
     def disconnect(self):
         self.socket.disconnectFromServer()
@@ -110,6 +112,9 @@ class Client:
     def sendError(self, arg):
         self.sendCommand(ERROR_COMMAND, arg)
 
+    def sendExit(self, exit_code):
+        self.sendCommand(EXIT_COMMAND, str(exit_code))
+
     def validate(self):
         if self.stream.status() != QDataStream.Ok:
             raise RuntimeError(
@@ -127,6 +132,9 @@ class Client:
             elif cmd == ERROR_COMMAND:
                 text = bytes(arg).decode("utf-8")
                 self.error = f"Error: {text}"
+                self.disconnect()
+            elif cmd == EXIT_COMMAND:
+                self.exit_code = int(arg)
                 self.disconnect()
             else:
                 self.error = f"Unknown message id {cmd}: {type(arg)}"

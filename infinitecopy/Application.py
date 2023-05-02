@@ -36,6 +36,7 @@ def pasterIfAvailable():
 class Application:
     def __init__(self, *, dbPath, serverName, enable_pasting, args):
         self.app = QGuiApplication(args)
+        self.app.quitOnLastWindowClosed = False
 
         self.server = Server()
         if not self.server.start(serverName):

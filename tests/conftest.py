@@ -51,11 +51,6 @@ def server():
 
 
 @fixture
-def timer():
-    return timer
-
-
-@fixture
 def app():
     app = createApp(args=["--session", APP_SESSION])
     assert app is not None
