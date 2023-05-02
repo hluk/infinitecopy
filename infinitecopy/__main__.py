@@ -120,6 +120,8 @@ def handleClient(server_name, args):
     client.waitForDisconnected()
     if client.error:
         raise SystemExit(client.error)
+    if client.exit_code:
+        raise SystemExit(client.exit_code)
 
     return True
 
