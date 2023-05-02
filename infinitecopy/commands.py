@@ -49,7 +49,7 @@ def command_add(app, client):
         text = client.receive()
         app.clipboardItemModel.addItemNoCommit({formats.mimeText: text})
     app.clipboardItemModel.endTransaction()
-    app.clipboardItemModel.submitChanges()
+    app.clipboardItemModel.select()
 
 
 def command_get(app, client):

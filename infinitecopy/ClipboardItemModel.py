@@ -170,6 +170,7 @@ class ClipboardItemModel(QSqlTableModel):
 
     def submitChanges(self):
         if not self.submitAll():
+            self.revertAll()
             raise ValueError(
                 f"Failed submit queries: {self.lastError().text()}"
             )
