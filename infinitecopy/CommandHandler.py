@@ -26,7 +26,7 @@ class CommandHandler:
             logger.info("Client failure: %s", e)
             client.sendError(str(e))
         finally:
-            socket.disconnectFromServer()
+            client.sendExit(0)
 
     def _on_message_helper(self, client):
         command = bytes(client.receive()).decode("utf-8")

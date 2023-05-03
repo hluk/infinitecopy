@@ -27,6 +27,7 @@ class Client:
             self.arg = None
         self.error = None
         self.exit_code = 0
+        self.socket.errorOccurred.connect(self._on_error_occurred)
 
     def disconnect(self):
         self.socket.disconnectFromServer()
@@ -121,6 +122,10 @@ class Client:
                 f"Failed to send/receive data: {self.stream.status()}"
             )
 
+    def _on_error_occurred(self):
+        self.error = f"Error: {self.socket.error()}"
+        self.disconnect()
+
     def _on_ready_read(self):
         while self.socket.bytesAvailable() > 0:
             cmd, arg = self.receiveCommand()
@@ -128,13 +133,13 @@ class Client:
                 return
 
             if cmd == PRINT_COMMAND:
-                sys.stdout.buffer.write(arg)
+                sys.stdout.buffer.write(bytes(arg))
             elif cmd == ERROR_COMMAND:
                 text = bytes(arg).decode("utf-8")
                 self.error = f"Error: {text}"
                 self.disconnect()
             elif cmd == EXIT_COMMAND:
-                self.exit_code = int(arg)
+                self.exit_code = max(self.exit_code, int(arg))
                 self.disconnect()
             else:
                 self.error = f"Unknown message id {cmd}: {type(arg)}"
