@@ -46,10 +46,16 @@ ColumnLayout {
         }
         function storeSelection() {
             lastCurrentRow = Math.max(0, clipboardItemView.currentRow)
-            lastCurrentRowHash = rowHash(lastCurrentRow) || ""
-            while (lastCurrentRowHash === "" && lastCurrentRow + 1 < clipboardItemView.rows) {
-                lastCurrentRow += 1
-                lastCurrentRowHash = rowHash(lastCurrentRow)
+            if (lastCurrentRow === 0) {
+                lastCurrentRowHash = ""
+            } else {
+                lastCurrentRowHash = rowHash(lastCurrentRow) || ""
+                // If hash is not available, assume that selection was removed
+                // and select the new item in the row at the start of the
+                // removed selection.
+                if (lastCurrentRowHash === "") {
+                    lastCurrentRow = clipboardItemView.selectionModel.selection[0].top
+                }
             }
         }
         function restoreSelection() {
