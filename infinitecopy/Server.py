@@ -21,8 +21,8 @@ class Server(QObject):
             return
 
         def on_ready_read():
+            socket.readyRead.disconnect(on_ready_read)
             stream = QDataStream(socket)
             self.messageReceived.emit(stream, socket)
 
         socket.readyRead.connect(on_ready_read)
-        socket.waitForDisconnected()
