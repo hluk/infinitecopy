@@ -2,32 +2,16 @@
 from unittest.mock import patch
 
 
-def test_add_get_item(server, capsys):
-    server("add", "test1", "test2", "test3")
-    captured = capsys.readouterr()
-    assert (captured.out, captured.err) == ("", "")
-
-    server("get", "0", "1", "2")
-    captured = capsys.readouterr()
-    assert (captured.out, captured.err) == ("test3\ntest2\ntest1", "")
-
-    server("get", ",", "0", "1", "2")
-    captured = capsys.readouterr()
-    assert (captured.out, captured.err) == ("test3,test2,test1", "")
-
-    server("get", r"\n\t", "0", "1", "2")
-    captured = capsys.readouterr()
-    assert (captured.out, captured.err) == ("test3\n\ttest2\n\ttest1", "")
+def test_add_get_item(server):
+    assert server("add", "test1", "test2", "test3") == b""
+    assert server("get", "0", "1", "2") == b"test3\ntest2\ntest1"
+    assert server("get", ",", "0", "1", "2") == b"test3,test2,test1"
+    assert server("get", r"\n\t", "0", "1", "2") == b"test3\n\ttest2\n\ttest1"
 
 
-def test_add_get_item_large(server, capsys):
+def test_add_get_item_large(server):
     input = b"[TEST]" * 50000
     with patch("sys.stdin.buffer.read", return_value=input):
-        server("add", "-")
-    captured = capsys.readouterr()
-    assert (captured.out, captured.err) == ("", "")
+        assert server("add", "-") == b""
 
-    server("get", "0")
-    captured = capsys.readouterr()
-    assert captured.err == ""
-    assert captured.out == input.decode("utf-8")
+    assert server("get", "0") == input
