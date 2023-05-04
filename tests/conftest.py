@@ -3,6 +3,7 @@ import os
 import sys
 import time
 from subprocess import Popen
+from unittest.mock import patch
 
 from pytest import fixture
 
@@ -41,8 +42,14 @@ def server():
         pass
 
     def run_client(*args):
-        app = createApp(args=["--session", session, *args])
-        assert app is None
+        with patch("infinitecopy.Client.sys.stdout") as mock_stdout:
+            app = createApp(args=["--session", session, *args])
+            assert app is None
+            write = mock_stdout.buffer.write
+            output = b""
+            for c in write.mock_calls:
+                output += c.args[0]
+            return output
 
     args = [sys.executable, "-m", "infinitecopy", "--session", session]
     with Popen(args) as proc:
