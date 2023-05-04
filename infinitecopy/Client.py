@@ -134,6 +134,7 @@ class Client:
 
             if cmd == PRINT_COMMAND:
                 sys.stdout.buffer.write(bytes(arg))
+                sys.stdout.buffer.flush()
             elif cmd == ERROR_COMMAND:
                 text = bytes(arg).decode("utf-8")
                 self.error = f"Error: {text}"
