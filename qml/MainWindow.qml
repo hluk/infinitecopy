@@ -15,7 +15,7 @@ ColumnLayout {
         Accessible.description: "filter items text field"
 
         Layout.fillWidth: true
-        model: clipboardItemView.model
+        model: clipboardItemModel
 
         KeyNavigation.tab: clipboardItemView
         KeyNavigation.down: clipboardItemView
@@ -30,7 +30,7 @@ ColumnLayout {
         Layout.fillHeight: true
         Layout.fillWidth: true
 
-        model: clipboardItemModelFilterProxy
+        model: clipboardItemModel
 
         // Keep a row selected after list updates.
         property int lastCurrentRow: 0

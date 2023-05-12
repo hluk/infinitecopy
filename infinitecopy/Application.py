@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
 import logging
 
-from PySide6.QtCore import QSortFilterProxyModel, QUrl
+from PySide6.QtCore import QUrl
 from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQuick import QQuickView
 from PySide6.QtSql import QSqlDatabase
@@ -53,11 +53,6 @@ class Application:
         self.clipboardItemModel = ClipboardItemModel(self.db)
         self.clipboardItemModel.create()
 
-        self.filterProxyModel = QSortFilterProxyModel()
-        self.filterProxyModel.setSourceModel(self.clipboardItemModel)
-        text_column = self.clipboardItemModel.textColumn
-        self.filterProxyModel.setFilterKeyColumn(text_column)
-
         self.clipboard = createClipboard()
 
         self.engine = self.view.engine()
@@ -70,9 +65,6 @@ class Application:
         self.context = self.view.rootContext()
         self.context.setContextProperty(
             "clipboardItemModel", self.clipboardItemModel
-        )
-        self.context.setContextProperty(
-            "clipboardItemModelFilterProxy", self.filterProxyModel
         )
         self.context.setContextProperty("clipboard", self.clipboard)
         self.context.setContextProperty("view", self.view)

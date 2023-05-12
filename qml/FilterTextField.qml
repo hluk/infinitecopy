@@ -8,8 +8,7 @@ TextField {
     placeholderText: qsTr("Filter items")
     onTextChanged: {
         if (model) {
-            model.filterCaseSensitivity = Qt.CaseInsensitive
-            model.filterRegularExpression = new RegExp(text)
+            model.textFilter = text
         }
     }
 }

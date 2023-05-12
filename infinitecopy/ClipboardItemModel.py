@@ -2,7 +2,7 @@
 import hashlib
 
 from PySide6.QtCore import Property, QByteArray, QDateTime, Qt, Slot
-from PySide6.QtSql import QSqlQuery, QSqlTableModel
+from PySide6.QtSql import QSqlField, QSqlQuery, QSqlTableModel
 
 import infinitecopy.MimeFormats as formats
 
@@ -37,7 +37,6 @@ SQL_CREATE_DB = [
     "PRAGMA foreign_keys = ON;",
     SQL_CREATE_TABLE_ITEM,
     SQL_CREATE_TABLE_DATA,
-    "CREATE INDEX IF NOT EXISTS index_item_text ON item (text);",
     "CREATE INDEX IF NOT EXISTS index_item_hash ON item (hash);",
     "CREATE INDEX IF NOT EXISTS index_data_item_id ON data (itemId);",
 ]
@@ -109,6 +108,30 @@ class ClipboardItemModel(QSqlTableModel):
     @Property(int)
     def hashColumn(self):
         return self.fieldIndex(COLUMN_HASH)
+
+    def setTextFilter(self, needle):
+        if not needle:
+            self.setFilter("")
+            return
+
+        f = QSqlField("", str)
+        if "%" in needle:
+            f.setValue(needle)
+        else:
+            f.setValue(f"%{needle}%")
+
+        formatted = self.database().driver().formatValue(f)
+        condition = f"{COLUMN_TEXT} LIKE {formatted}"
+
+        if needle.islower():
+            self.database().exec("PRAGMA case_sensitive_like=OFF;")
+        else:
+            self.database().exec("PRAGMA case_sensitive_like=ON;")
+
+        self.setFilter(condition)
+        self.select()
+
+    textFilter = Property(str, None, setTextFilter)
 
     def create(self):
         self.beginTransaction()

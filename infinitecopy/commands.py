@@ -68,8 +68,8 @@ def command_get(app, client):
             client.sendPrint(sep)
         write_sep = True
 
-        index = app.filterProxyModel.index(row, column)
-        data = app.filterProxyModel.data(index, Qt.DisplayRole)
+        index = app.clipboardItemModel.index(row, column)
+        data = app.clipboardItemModel.data(index, Qt.DisplayRole)
         if data:
             client.sendPrint(data)
 
