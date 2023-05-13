@@ -10,8 +10,12 @@ def test_add_get_item(server):
 
 
 def test_add_get_item_large(server):
-    input = b"[TEST]" * 50000
-    with patch("sys.stdin.buffer.read", return_value=input):
+    expected = b"[TEST]" * 50000
+    with patch("sys.stdin.buffer.read", return_value=expected):
         assert server("add", "-") == b""
 
-    assert server("get", "0") == input
+    item = server("get", "0")
+    # Try to avoid printing a huge diff on failure.
+    assert item[:20] == expected[:20]
+    assert len(item) == len(expected)
+    assert item == expected
