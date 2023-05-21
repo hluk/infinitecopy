@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
 import logging
 
-from PySide6.QtCore import Qt
-
 import infinitecopy.MimeFormats as formats
 
 logger = logging.getLogger(__name__)
@@ -55,7 +53,6 @@ def command_add(app, client):
 def command_get(app, client):
     sep = "\n"
     write_sep = False
-    column = app.clipboardItemModel.textColumn
     while not client.atEnd():
         arg = client.receive()
         try:
@@ -68,8 +65,10 @@ def command_get(app, client):
             client.sendPrint(sep)
         write_sep = True
 
-        index = app.clipboardItemModel.index(row, column)
-        data = app.clipboardItemModel.data(index, Qt.DisplayRole)
+        index = app.clipboardItemModel.index(row, 0)
+        data = app.clipboardItemModel.data(
+            index, app.clipboardItemModel.itemTextRole
+        )
         if data:
             client.sendPrint(data)
 
