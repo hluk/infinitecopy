@@ -3,22 +3,39 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import InfiniteCopy 1.0
+
 ColumnLayout {
     Accessible.name: "infinitecopy main window"
 
     anchors.fill: parent
 
-    FilterTextField {
-        id: filterTextField
+    RowLayout {
         z: 2
 
-        Accessible.description: "filter items text field"
+        FilterTextField {
+            id: filterTextField
+            Accessible.description: "filter items text field"
 
-        Layout.fillWidth: true
-        model: clipboardItemModel
+            Layout.fillWidth: true
+            model: clipboardItemModel
 
-        KeyNavigation.tab: clipboardItemView
-        KeyNavigation.down: clipboardItemView
+            KeyNavigation.tab: clipboardItemView
+            KeyNavigation.down: clipboardItemView
+        }
+
+        ComboBox {
+            textRole: "text"
+            model: ListModel {
+                id: items
+                ListElement { text: qsTr("smart-case"); value: ClipboardItemModel.CaseSensitivity.Smart }
+                ListElement { text: qsTr("case-sensitive"); value: ClipboardItemModel.CaseSensitivity.Sensitive }
+                ListElement { text: qsTr("ignore-case"); value: ClipboardItemModel.CaseSensitivity.Ignore }
+            }
+            onCurrentIndexChanged: {
+                clipboardItemModel.caseSensitivity = items.get(currentIndex).value
+            }
+        }
     }
 
     ClipboardItemView {

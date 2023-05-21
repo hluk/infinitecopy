@@ -1,10 +1,17 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
 import hashlib
+from enum import IntEnum
+from itertools import repeat
 
-from PySide6.QtCore import Property, QByteArray, QDateTime, Qt, Slot
+from PySide6.QtCore import Property, QByteArray, QDateTime, QEnum, Qt, Slot
+from PySide6.QtQml import QmlElement
 from PySide6.QtSql import QSqlField, QSqlQuery, QSqlTableModel
 
 import infinitecopy.MimeFormats as formats
+
+QML_IMPORT_NAME = "InfiniteCopy"
+QML_IMPORT_MAJOR_VERSION = 1
+QML_IMPORT_MINOR_VERSION = 0
 
 FORMAT_TO_ITEM_COLUMN_MAP = {
     formats.mimeText: ":text",
@@ -93,13 +100,29 @@ def executeQuery(query):
         )
 
 
+@QmlElement
 class ClipboardItemModel(QSqlTableModel):
+    @QEnum
+    class CaseSensitivity(IntEnum):
+        Smart, Sensitive, Ignore = range(3)
+
     def __init__(self, db):
         QSqlTableModel.__init__(self, db=db)
         self.roles = {}
         self.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.lastAddedHash = ""
         self.generateRoleNames()
+        self.case_sensitivity = self.CaseSensitivity.Smart
+        self.needle = ""
+
+    @Property(int)
+    def caseSensitivity(self):
+        return self.case_sensitivity
+
+    @caseSensitivity.setter
+    def caseSensitivity(self, value):
+        self.case_sensitivity = value
+        self.setTextFilter(self.needle)
 
     @Property(int)
     def textColumn(self):
@@ -110,23 +133,43 @@ class ClipboardItemModel(QSqlTableModel):
         return self.fieldIndex(COLUMN_HASH)
 
     def setTextFilter(self, needle):
+        self.needle = needle
+
         if not needle:
             self.setFilter("")
             return
 
         f = QSqlField("", str)
-        if "%" in needle:
-            f.setValue(needle)
-        else:
-            f.setValue(f"%{needle}%")
+        if "%" not in needle:
+            needle = "".join(
+                sum(
+                    zip(needle, repeat("%")),
+                    start=tuple(
+                        "%",
+                    ),
+                )
+            )
+
+        f.setValue(needle)
 
         formatted = self.database().driver().formatValue(f)
         condition = f"{COLUMN_TEXT} LIKE {formatted}"
 
-        if needle.islower():
-            self.database().exec("PRAGMA case_sensitive_like=OFF;")
+        if self.case_sensitivity == self.CaseSensitivity.Smart:
+            if needle.islower():
+                case_sensitive = "OFF"
+            else:
+                case_sensitive = "ON"
+        elif self.case_sensitivity == self.CaseSensitivity.Sensitive:
+            case_sensitive = "ON"
+        elif self.case_sensitivity == self.CaseSensitivity.Ignore:
+            case_sensitive = "OFF"
         else:
-            self.database().exec("PRAGMA case_sensitive_like=ON;")
+            raise RuntimeError(
+                f"Invalid case-sensitivity value: {self.case_sensitivity}"
+            )
+
+        self.database().exec(f"PRAGMA case_sensitive_like={case_sensitive};")
 
         self.setFilter(condition)
         self.select()
