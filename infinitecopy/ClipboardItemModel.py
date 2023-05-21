@@ -124,14 +124,6 @@ class ClipboardItemModel(QSqlTableModel):
         self.case_sensitivity = value
         self.setTextFilter(self.needle)
 
-    @Property(int)
-    def textColumn(self):
-        return self.fieldIndex(COLUMN_TEXT)
-
-    @Property(int)
-    def hashColumn(self):
-        return self.fieldIndex(COLUMN_HASH)
-
     def setTextFilter(self, needle):
         self.needle = needle
 
@@ -349,6 +341,10 @@ class ClipboardItemModel(QSqlTableModel):
             return data
 
         return None
+
+    def columnCount(self, _index):
+        # Show only single column in item views
+        return 1
 
     def imageData(self, row):
         record = self.record(row)

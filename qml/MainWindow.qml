@@ -58,8 +58,8 @@ ColumnLayout {
             restoreSelection()
         }
         function rowHash(row) {
-            const index = clipboardItemView.index(row, clipboardItemModel.hashColumn)
-            return clipboardItemModel.data(index)
+            const index = clipboardItemView.index(row, 0)
+            return clipboardItemModel.data(index, clipboardItemModel.itemHashRole)
         }
         function storeSelection() {
             lastCurrentRow = Math.max(0, clipboardItemView.currentRow)
@@ -71,7 +71,8 @@ ColumnLayout {
                 // and select the new item in the row at the start of the
                 // removed selection.
                 if (lastCurrentRowHash === "") {
-                    lastCurrentRow = clipboardItemView.selectionModel.selection[0].top
+                    const sel = clipboardItemView.selectionModel.selection
+                    lastCurrentRow = sel[0] ? sel[0].top : 0
                 }
             }
         }
