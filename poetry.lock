@@ -590,22 +590,22 @@ testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pyside6-essentials"
-version = "6.5.0"
+version = "6.5.1"
 description = "Python bindings for the Qt cross-platform application and UI framework (Essentials)"
 category = "main"
 optional = false
 python-versions = "<3.12,>=3.7"
 files = [
-    {file = "PySide6_Essentials-6.5.0-cp37-abi3-macosx_10_9_universal2.whl", hash = "sha256:4517e27fc540d9e645ea12dea82c8b29c042d66aaef46960a125cccdf0079800"},
-    {file = "PySide6_Essentials-6.5.0-cp37-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:f00d4f10758cdc3f49f94465ead788ad294dac7d9cc5e1cc0610e97c2bdfc8d7"},
-    {file = "PySide6_Essentials-6.5.0-cp37-abi3-win_amd64.whl", hash = "sha256:bc2e0a9dafe383ab965e98b6ddf73f709da3736197dea8eab265fd3e524db993"},
-    {file = "PySide6_Essentials-6.5.0-pp39-pypy39_pp73-macosx_10_9_universal2.whl", hash = "sha256:58a88a099171c55a7e41e519208c9ca93661d277bb73c5897a2e3f2cbe5248b7"},
-    {file = "PySide6_Essentials-6.5.0-pp39-pypy39_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:0287ec94ee1923d430bb20836bc649a5c76a59281245de469d7f759cc73c5ea7"},
-    {file = "PySide6_Essentials-6.5.0-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:987c2ec04c35481c841de9b25931d2d074eb7d2e591aa5628041b2ca2df96d0e"},
+    {file = "PySide6_Essentials-6.5.1-cp37-abi3-macosx_10_9_universal2.whl", hash = "sha256:09884ace7574b64d33a0fe53b6185d1ffcd8cc5fa3451169b12b9ac1ea7e9951"},
+    {file = "PySide6_Essentials-6.5.1-cp37-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:b893e901724376c556abc6e4e7a88ec2b60483752c4af62692f71ae01d8c6824"},
+    {file = "PySide6_Essentials-6.5.1-cp37-abi3-win_amd64.whl", hash = "sha256:6169239731646b81a7b325562f4e99dee4160db757370914c77030538de4dd47"},
+    {file = "PySide6_Essentials-6.5.1-pp39-pypy39_pp73-macosx_10_9_universal2.whl", hash = "sha256:dd2d5fe5af688090849e59ca4afa11330b9236913bf18f84825b0d074f553e16"},
+    {file = "PySide6_Essentials-6.5.1-pp39-pypy39_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:475d32118242aea4236ce5a77f9eeb027a34cf05684763d24a8abe112f24029c"},
+    {file = "PySide6_Essentials-6.5.1-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:a7d2ec3ec43ca76c21bcc4a807e0e5d64a3376ba0c9fe1e90fb7cda923b6784c"},
 ]
 
 [package.dependencies]
-shiboken6 = "6.5.0"
+shiboken6 = "6.5.1"
 
 [[package]]
 name = "pytest"
@@ -651,18 +651,18 @@ testing = ["fields", "hunter", "process-tests", "pytest-xdist", "six", "virtuale
 
 [[package]]
 name = "shiboken6"
-version = "6.5.0"
+version = "6.5.1"
 description = "Python/C++ bindings helper module"
 category = "main"
 optional = false
 python-versions = "<3.12,>=3.7"
 files = [
-    {file = "shiboken6-6.5.0-cp37-abi3-macosx_10_9_universal2.whl", hash = "sha256:2d7fe6534a51ec9c96b82fc6275cf75e85ab29276a9778aed756465f81adf0c1"},
-    {file = "shiboken6-6.5.0-cp37-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:46ff977f96c9d45dba3c3a313628356fd40e4423bb65bf2d9870b73396fad8be"},
-    {file = "shiboken6-6.5.0-cp37-abi3-win_amd64.whl", hash = "sha256:aee9708517821aaef547c83d689bf524d6f217d47232cb313d9af9e630215eed"},
-    {file = "shiboken6-6.5.0-pp39-pypy39_pp73-macosx_10_9_universal2.whl", hash = "sha256:6e2874ea013d4cea7819935977bffa4c634ebcaabcb5287798df9f0c2f10c4c0"},
-    {file = "shiboken6-6.5.0-pp39-pypy39_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:72888ebc5ef7295df27197c0af726bd6731e2a883b346e448e2c740b3e34bc2f"},
-    {file = "shiboken6-6.5.0-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:1bba668221a5cf40186cea93ced018cf788d7476d50968a3f073ebbe41ce712d"},
+    {file = "shiboken6-6.5.1-cp37-abi3-macosx_10_9_universal2.whl", hash = "sha256:3a832110f752228e3e0c30a86a6c3fc2770148c2999c15c8fc259c03cce1e065"},
+    {file = "shiboken6-6.5.1-cp37-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:d9b3724772d5e98868ea6718a8d866ab3591ee3300febc74b00b32aaa0e4d295"},
+    {file = "shiboken6-6.5.1-cp37-abi3-win_amd64.whl", hash = "sha256:40313ea1c940e7c6fd26651b166b5ddb3db850374d29c74342a74dbba92ba61b"},
+    {file = "shiboken6-6.5.1-pp39-pypy39_pp73-macosx_10_9_universal2.whl", hash = "sha256:0f8744f06a8518476626230c85b1246a95f650cf739c06ee2b6f8a9124f1e8c0"},
+    {file = "shiboken6-6.5.1-pp39-pypy39_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:8a0828ed237d16124376a97888a62ffe8243f3c623c87d204483d1d5b4511968"},
+    {file = "shiboken6-6.5.1-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:5619e6318228e85194cbb7966e3e05bf815305e85edf0f02af19156ba8506d5d"},
 ]
 
 [[package]]
@@ -848,4 +848,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.11"
-content-hash = "0ab604d21ac5f71cfddc7bbd38753e3b15637b8220f689c1c39f542e78caa754"
+content-hash = "63287e97425fb868a38bcd815f6fec431facce3712a90ca2f1bfe300f913a8a3"

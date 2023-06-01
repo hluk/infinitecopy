@@ -8,7 +8,7 @@ include = ["infinitecopy.png", "qml/*"]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
-PySide6-Essentials = "^6.5.0"
+PySide6-Essentials = "^6.5.1"
 PyGObject = [
   {version = "^3.42.0", markers = "platform_system == 'Linux'"}
 ]
