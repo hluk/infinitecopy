@@ -15,15 +15,15 @@ PyGObject = [
 ]
 
 [tool.poetry.dev-dependencies]
-Nuitka = "^1.5.4,!=1.5.5,!=1.5.6,!=1.5.7"
+Nuitka = "^1.6"
 zstandard = "^0.21.0"
 imageio = [
   {version = "^2.22.4", markers = "platform_system != 'Linux'"}
 ]
 pillow = "^9.3.0"
-pylint = "^2.17.3"
+pylint = "^2.17.4"
 pytest = "^7.3.1"
-pytest-cov = "^4.0.0"
+pytest-cov = "^4.1.0"
 
 [tool.poetry.scripts]
 infinitecopy = "infinitecopy.__main__:main"
