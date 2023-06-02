@@ -14,17 +14,16 @@ logger = logging.getLogger(__name__)
 
 
 class Client:
-    def __init__(self, socket=None, stream=None):
-        if socket and stream:
+    def __init__(self, socket=None):
+        if socket:
             self.socket = socket
-            self.stream = stream
         else:
             self.socket = QLocalSocket()
             self.socket.readyRead.connect(self._on_ready_read)
-            self.stream = QDataStream(self.socket)
             self.cmd = None
             self.length = None
             self.arg = None
+        self.stream = QDataStream(self.socket)
         self.error = None
         self.exit_code = 0
         self.socket.errorOccurred.connect(self._on_error_occurred)
@@ -120,6 +119,7 @@ class Client:
         if self.stream.status() != QDataStream.Ok:
             raise RuntimeError(
                 f"Failed to send/receive data: {self.stream.status()}"
+                f"\nError: {self.socket.error()}"
             )
 
     def _on_error_occurred(self):
