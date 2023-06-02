@@ -18,8 +18,8 @@ class CommandHandler:
                 command_name = name[prefix:]
                 self.commands[command_name] = fn
 
-    def receive(self, stream, socket):
-        client = Client(socket, stream)
+    def receive(self, socket):
+        client = Client(socket)
         try:
             self._on_message_helper(client)
         except Exception as e:
