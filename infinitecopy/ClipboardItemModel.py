@@ -68,6 +68,9 @@ SQL_INSERT_DATA = (
     " VALUES (:itemId, :format, :bytes);"
 )
 
+SQL_GET_ITEM = "SELECT text FROM item LIMIT 1 OFFSET :row;"
+SQL_GET_ITEM_COUNT = "SELECT count() AS count FROM item;"
+
 
 def createHash(data):
     hash_ = hashlib.sha256()
@@ -225,6 +228,18 @@ class ClipboardItemModel(QSqlTableModel):
             executeQuery(query)
 
         return True
+
+    def getItem(self, row):
+        query = self.executeQuery(SQL_GET_ITEM_COUNT)
+        if not query.next():
+            return None
+
+        count = query.value("count")
+        query = self.executeQuery(SQL_GET_ITEM, row=count - row - 1)
+        if not query.next():
+            return None
+
+        return query.value("text")
 
     def submitChanges(self):
         if not self.submitAll():
