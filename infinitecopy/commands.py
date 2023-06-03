@@ -65,12 +65,9 @@ def command_get(app, client):
             client.sendPrint(sep)
         write_sep = True
 
-        index = app.clipboardItemModel.index(row, 0)
-        data = app.clipboardItemModel.data(
-            index, app.clipboardItemModel.itemTextRole
-        )
-        if data:
-            client.sendPrint(data)
+        text = app.clipboardItemModel.getItem(row)
+        if text:
+            client.sendPrint(text)
 
 
 def command_paste(app, client):
