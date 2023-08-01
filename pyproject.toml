@@ -9,7 +9,7 @@ include = ["infinitecopy.png", "qml/*"]
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
 # there is some problems with sockets being closed with pyside 6.5.1
-PySide6-Essentials = "<6.5.1"
+PySide6-Essentials = "<6.5.3"
 PyGObject = [
   {version = "^3.42.0", markers = "platform_system == 'Linux'"}
 ]
