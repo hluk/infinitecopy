@@ -9,20 +9,20 @@ include = ["infinitecopy.png", "qml/*"]
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
 # there is some problems with sockets being closed with pyside 6.5.1
-PySide6-Essentials = "<6.5.1"
+PySide6-Essentials = "<6.5.3"
 PyGObject = [
   {version = "^3.42.0", markers = "platform_system == 'Linux'"}
 ]
 
 [tool.poetry.dev-dependencies]
-Nuitka = "^1.6"
+Nuitka = "^1.7"
 zstandard = "^0.21.0"
 imageio = [
   {version = "^2.22.4", markers = "platform_system != 'Linux'"}
 ]
-pillow = "^9.3.0"
-pylint = "^2.17.4"
-pytest = "^7.3.1"
+pillow = "^10.0.0"
+pylint = "^2.17.5"
+pytest = "^7.4.0"
 pytest-cov = "^4.1.0"
 
 [tool.poetry.scripts]
