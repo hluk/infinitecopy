@@ -41,6 +41,11 @@ def command_quit(app, _client):
     app.app.quit()
 
 
+def command_count(app, client):
+    count = app.clipboardItemModel.getItemCount()
+    client.sendPrint(str(count).encode("utf-8"))
+
+
 def command_add(app, client):
     app.clipboardItemModel.beginTransaction()
     while not client.atEnd():

@@ -229,12 +229,18 @@ class ClipboardItemModel(QSqlTableModel):
 
         return True
 
-    def getItem(self, row):
+    def getItemCount(self):
         query = self.executeQuery(SQL_GET_ITEM_COUNT)
         if not query.next():
+            return 0
+
+        return query.value("count")
+
+    def getItem(self, row):
+        count = self.getItemCount()
+        if count < row + 1:
             return None
 
-        count = query.value("count")
         query = self.executeQuery(SQL_GET_ITEM, row=count - row - 1)
         if not query.next():
             return None

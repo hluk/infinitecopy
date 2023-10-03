@@ -206,6 +206,7 @@ ColumnLayout {
                 clipboardItemView.selectionModel.setCurrentIndex(
                     index, ItemSelectionModel.Clear)
                 clipboardItemView.positionViewAtRow(row, Qt.AlignVertical_Mask)
+                console.log(row, clipboardItemView.model.rowCount() - 1)
             }
         }
     }
