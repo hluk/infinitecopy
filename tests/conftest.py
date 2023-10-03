@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 def wait_for_server(session):
     client = Client(log_states=False)
-    retry = 20
+    retry = 50
     server_name = serverName(session)
 
     if CPULIMIT:
