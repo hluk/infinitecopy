@@ -180,10 +180,32 @@ ColumnLayout {
                 } else {
                   filterTextField.text = ""
                   if (clipboardItemView.rows > 0) {
-                      clipboardItemView.currentRow = -1
-                      clipboardItemView.currentRow = 0
+                      const index = clipboardItemView.model.index(0, 0)
+                      clipboardItemView.selectionModel.setCurrentIndex(
+                          index, ItemSelectionModel.Clear)
                   }
                 }
+            }
+        }
+
+        Shortcut {
+            sequence: 'Home'
+            onActivated: {
+                const index = clipboardItemView.model.index(0, 0)
+                clipboardItemView.selectionModel.setCurrentIndex(
+                    index, ItemSelectionModel.Clear)
+                clipboardItemView.positionViewAtRow(0, Qt.AlignVertical_Mask)
+            }
+        }
+
+        Shortcut {
+            sequence: 'End'
+            onActivated: {
+                const row = clipboardItemView.model.rowCount() - 1
+                const index = clipboardItemView.model.index(row, 0)
+                clipboardItemView.selectionModel.setCurrentIndex(
+                    index, ItemSelectionModel.Clear)
+                clipboardItemView.positionViewAtRow(row, Qt.AlignVertical_Mask)
             }
         }
     }
