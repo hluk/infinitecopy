@@ -26,7 +26,8 @@ class CommandHandler:
             logger.info("Client failure: %s", e)
             client.sendError(str(e))
         finally:
-            client.sendExit(0)
+            if client.exit_code is None:
+                client.sendExit(0)
 
     def _on_message_helper(self, client):
         command = client.receiveCommandName()

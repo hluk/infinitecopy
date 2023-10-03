@@ -33,7 +33,7 @@ class Client:
         self.arg = None
         self.stream = QDataStream(self.socket)
         self.error = None
-        self.exit_code = 0
+        self.exit_code = None
         self.log_states = log_states
         self.socket.stateChanged.connect(self._on_state_changed)
         self.socket.errorOccurred.connect(self._on_error_occurred)
@@ -148,6 +148,7 @@ class Client:
         self._send(MessageId.ERROR, arg)
 
     def sendExit(self, exit_code):
+        self.exit_code = exit_code
         self._send(MessageId.EXIT, str(exit_code))
 
     def validate(self):
@@ -182,7 +183,7 @@ class Client:
                 self.error = f"Error: {text}"
                 self.disconnect()
             elif msg_id == MessageId.EXIT:
-                self.exit_code = max(self.exit_code, int(arg))
+                self.exit_code = max(self.exit_code or 0, int(arg))
                 self.disconnect()
             else:
                 self.error = f"Unknown message ID {msg_id}: {type(arg)}"

@@ -37,7 +37,9 @@ def command_active(app, client):
         client.sendExit(1)
 
 
-def command_quit(app, _client):
+def command_quit(app, client):
+    client.sendExit(0)
+    client.waitForDisconnected()
     app.app.quit()
 
 
