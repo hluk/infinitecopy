@@ -48,8 +48,8 @@ def command_count(app, client):
 
 def command_add(app, client):
     app.clipboardItemModel.beginTransaction()
-    while not client.atEnd():
-        text = client.receive()
+    for text in client.receiveCommandArguments():
+        logger.debug("command_add: Adding text item: %d bytes", len(text))
         app.clipboardItemModel.addItemNoCommit({formats.mimeText: text})
     app.clipboardItemModel.endTransaction()
     app.clipboardItemModel.select()
@@ -58,8 +58,7 @@ def command_add(app, client):
 def command_get(app, client):
     sep = "\n"
     write_sep = False
-    while not client.atEnd():
-        arg = client.receive()
+    for arg in client.receiveCommandArguments():
         try:
             row = int(arg)
         except ValueError:
@@ -80,8 +79,8 @@ def command_paste(app, client):
         logger.warning("Pasting text is unsupported")
     else:
         logger.info("Pasting text")
-        while not client.atEnd():
-            text = bytes(client.receive()).decode("utf-8")
+        for data in client.receiveCommandArguments():
+            text = bytes(data).decode("utf-8")
             if not app.paster.paste(text):
                 logger.warning("Failed to paste text")
                 break

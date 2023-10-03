@@ -29,7 +29,8 @@ class CommandHandler:
             client.sendExit(0)
 
     def _on_message_helper(self, client):
-        command = bytes(client.receive()).decode("utf-8")
+        command = client.receiveCommandName()
+        logger.debug("Received command: %s", command)
         fn = self.commands.get(command)
         if fn:
             fn(self.app, client)
