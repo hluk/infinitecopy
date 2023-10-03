@@ -32,8 +32,7 @@ def plugin_files():
         else:
             logger.debug("No plugins found in: %s", path)
 
-        for plugin in sorted(plugins):
-            yield plugin
+        yield from sorted(plugins)
 
 
 def plugin_modules():
