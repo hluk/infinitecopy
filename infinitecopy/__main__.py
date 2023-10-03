@@ -101,22 +101,26 @@ def setUpPaths(app):
 
 
 def handleClient(server_name, args):
-    client = Client()
+    client = Client(log_states=False)
 
     if not client.connect(server_name):
         if args.commands:
             raise SystemExit("Start the application before using a command")
         return False
 
+    client.log_states = True
+
     args = args.commands or ["show"]
+    client.sendCommandName(args[0])
     stdin = None
-    for arg in args:
+    for arg in args[1:]:
         if arg == "-":
             if stdin is None:
                 stdin = sys.stdin.buffer.read()
             arg = stdin
-        client.send(arg)
+        client.sendCommandArgument(arg)
 
+    client.sendCommandEnd()
     client.waitForDisconnected()
 
     if client.error:

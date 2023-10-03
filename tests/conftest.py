@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: LGPL-2.0-or-later
+import logging
 import os
 import sys
 import time
@@ -34,10 +35,12 @@ CPULIMIT_ARGS = [
     "--limit",
 ]
 
+logger = logging.getLogger(__name__)
+
 
 def wait_for_server(session):
-    client = Client()
-    retry = 20
+    client = Client(log_states=False)
+    retry = 50
     server_name = serverName(session)
 
     if CPULIMIT:
@@ -56,10 +59,11 @@ def wait_for_server(session):
 
 
 def terminate_server(session):
-    client = Client()
+    client = Client(log_states=False)
     server_name = serverName(session)
     if client.connect(server_name):
-        client.send("quit")
+        client.sendCommandName("quit")
+        client.sendCommandEnd()
         client.waitForDisconnected()
 
 
