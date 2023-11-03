@@ -49,16 +49,11 @@ class Client:
         self.socket.waitForDisconnected(-1)
 
     def waitForBytesAvailable(self):
-        return (
-            self.socket.bytesAvailable() > 0
-            or self.socket.waitForReadyRead(-1)
-        )
+        return self.socket.bytesAvailable() > 0 or self.socket.waitForReadyRead(-1)
 
     def receiveCommandArguments(self):
         while True:
-            msg_id, arg = self._receive(
-                MessageId.COMMAND_ARG, MessageId.COMMAND_END
-            )
+            msg_id, arg = self._receive(MessageId.COMMAND_ARG, MessageId.COMMAND_END)
 
             if msg_id == MessageId.COMMAND_END:
                 break
@@ -103,7 +98,9 @@ class Client:
                 continue
 
             if msg_id not in expected_msg_ids:
-                self.error = f"Unexpected message ID {msg_id} (expected {expected_msg_ids})"
+                self.error = (
+                    f"Unexpected message ID {msg_id} (expected {expected_msg_ids})"
+                )
                 logger.error(self.error)
                 self.disconnect()
                 return None, None

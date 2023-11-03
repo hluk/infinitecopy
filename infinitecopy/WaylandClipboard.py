@@ -35,19 +35,14 @@ def toBytes(data):
 
 
 def isFinished(process, timeout):
-    return process.state() == QProcess.NotRunning or process.waitForFinished(
-        timeout
-    )
+    return process.state() == QProcess.NotRunning or process.waitForFinished(timeout)
 
 
 def waitForFinished(process):
     elapsed = QElapsedTimer()
     elapsed.start()
 
-    while (
-        not isFinished(process, 50)
-        and elapsed.elapsed() < PROCESS_FINISH_TIMEOUT_MS
-    ):
+    while not isFinished(process, 50) and elapsed.elapsed() < PROCESS_FINISH_TIMEOUT_MS:
         QCoreApplication.processEvents()
 
     if isFinished(process, 0):
@@ -60,10 +55,7 @@ def waitForFinished(process):
     )
 
     process.terminate()
-    while (
-        not isFinished(process, 50)
-        and elapsed.elapsed() < PROCESS_FINISH_TIMEOUT_MS
-    ):
+    while not isFinished(process, 50) and elapsed.elapsed() < PROCESS_FINISH_TIMEOUT_MS:
         QCoreApplication.processEvents()
 
     return False
@@ -128,9 +120,7 @@ class ClipboardDataProcess:
             lambda: logPasteErrorOutput(self.process)
         )
 
-        self.process.start(
-            "wl-paste", ["--type", format_] + args, QIODevice.ReadOnly
-        )
+        self.process.start("wl-paste", ["--type", format_] + args, QIODevice.ReadOnly)
 
         if not self.process.waitForStarted(PROCESS_START_TIMEOUT_MS):
             logger.critical(
@@ -191,9 +181,7 @@ class WaylandClipboard(QObject):
 
         self.formats = config.formats
 
-        clipboardProcess = startWlPasteProcess(
-            [], self.onClipboardChanged, "clipboard"
-        )
+        clipboardProcess = startWlPasteProcess([], self.onClipboardChanged, "clipboard")
         selectionProcess = startWlPasteProcess(
             ["--primary"], self.onSelectionChanged, "selection"
         )
@@ -227,8 +215,7 @@ class WaylandClipboard(QObject):
     def emitChanged(self, args, source):
         data = {}
         processes = [
-            (format_, ClipboardDataProcess(format_, args))
-            for format_ in self.formats
+            (format_, ClipboardDataProcess(format_, args)) for format_ in self.formats
         ]
 
         for format_, process in processes:

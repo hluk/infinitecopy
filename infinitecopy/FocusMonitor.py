@@ -68,9 +68,7 @@ class FocusMonitor(QObject):
             self._eventWrapper, self._on_focus_changed
         )
         logger.debug("Registering listener")
-        Atspi.EventListener.register(
-            self.listener, "object:state-changed:focused"
-        )
+        Atspi.EventListener.register(self.listener, "object:state-changed:focused")
 
         self.key_listener = Atspi.DeviceListener.new(
             self._eventWrapper, self._on_key_press
@@ -102,9 +100,7 @@ class FocusMonitor(QObject):
     def stop(self):
         logger.debug("Deregistering listeners")
 
-        Atspi.EventListener.deregister(
-            self.listener, "object:state-changed:focused"
-        )
+        Atspi.EventListener.deregister(self.listener, "object:state-changed:focused")
 
         if self.key_listener:
             for modmask in MOD_MASKS:

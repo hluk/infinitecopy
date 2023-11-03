@@ -8,7 +8,7 @@ include = ["infinitecopy.png", "qml/*"]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
-PySide6-Essentials = "^6.5.2"
+PySide6-Essentials = "^6.6.0"
 PyGObject = [
   {version = "^3.42.0", markers = "platform_system == 'Linux'"}
 ]
@@ -19,9 +19,9 @@ zstandard = "^0.21.0"
 imageio = [
   {version = "^2.22.4", markers = "platform_system != 'Linux'"}
 ]
-pillow = "^10.0.1"
-pylint = "^2.17.7"
-pytest = "^7.4.2"
+pillow = "^10.1.0"
+pylint = "^3.0.2"
+pytest = "^7.4.3"
 pytest-cov = "^4.1.0"
 
 [tool.poetry.scripts]

@@ -57,15 +57,11 @@ class Application:
 
         self.engine = self.view.engine()
 
-        self.imageProvider = ClipboardItemModelImageProvider(
-            self.clipboardItemModel
-        )
+        self.imageProvider = ClipboardItemModelImageProvider(self.clipboardItemModel)
         self.engine.addImageProvider("items", self.imageProvider)
 
         self.context = self.view.rootContext()
-        self.context.setContextProperty(
-            "clipboardItemModel", self.clipboardItemModel
-        )
+        self.context.setContextProperty("clipboardItemModel", self.clipboardItemModel)
         self.context.setContextProperty("clipboard", self.clipboard)
         self.context.setContextProperty("view", self.view)
 

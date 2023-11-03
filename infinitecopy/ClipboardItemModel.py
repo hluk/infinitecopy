@@ -48,13 +48,9 @@ SQL_CREATE_DB = [
     "CREATE INDEX IF NOT EXISTS index_data_item_id ON data (itemId);",
 ]
 
-SQL_SELECT_DATA = (
-    "SELECT bytes FROM data WHERE itemId = :id AND format = :format;"
-)
+SQL_SELECT_DATA = "SELECT bytes FROM data WHERE itemId = :id AND format = :format;"
 
-SQL_SELECT_FORMAT_AND_DATA = (
-    "SELECT format, bytes FROM data WHERE itemId = :id;"
-)
+SQL_SELECT_FORMAT_AND_DATA = "SELECT format, bytes FROM data WHERE itemId = :id;"
 
 SQL_HAS_FORMAT = "SELECT 1 FROM data WHERE itemId = :id AND format = :format;"
 
@@ -64,8 +60,7 @@ SQL_INSERT_ITEM = (
 )
 
 SQL_INSERT_DATA = (
-    "INSERT INTO data (itemId, format, bytes)"
-    " VALUES (:itemId, :format, :bytes);"
+    "INSERT INTO data (itemId, format, bytes) VALUES (:itemId, :format, :bytes);"
 )
 
 SQL_GET_ITEM = "SELECT text FROM item LIMIT 1 OFFSET :row;"
@@ -89,9 +84,7 @@ def createHash(data):
 def prepareQuery(query, queryText):
     if not query.prepare(queryText):
         lastError = query.lastError().text()
-        raise ValueError(
-            f"Bad query template: {queryText}\nLast error: {lastError}"
-        )
+        raise ValueError(f"Bad query template: {queryText}\nLast error: {lastError}")
 
 
 def executeQuery(query):
@@ -188,8 +181,7 @@ class ClipboardItemModel(QSqlTableModel):
     def addItemNoEmpty(self, data):
         # Ignore empty data.
         if all(
-            f.startswith(formats.mimePrefixInternal)
-            or d.trimmed().length() == 0
+            f.startswith(formats.mimePrefixInternal) or d.trimmed().length() == 0
             for f, d in data.items()
         ):
             return
@@ -250,18 +242,14 @@ class ClipboardItemModel(QSqlTableModel):
     def submitChanges(self):
         if not self.submitAll():
             self.revertAll()
-            raise ValueError(
-                f"Failed submit queries: {self.lastError().text()}"
-            )
+            raise ValueError(f"Failed submit queries: {self.lastError().text()}")
 
     def beginTransaction(self):
         self.database().transaction()
 
     def endTransaction(self):
         if not self.database().commit():
-            raise ValueError(
-                f"Failed submit queries: {self.lastError().text()}"
-            )
+            raise ValueError(f"Failed submit queries: {self.lastError().text()}")
 
     @Slot(int, int)
     def removeItems(self, row, count):
@@ -347,9 +335,7 @@ class ClipboardItemModel(QSqlTableModel):
             return query.next()
 
         if role == self.itemDataRole:
-            query = self.executeQuery(
-                SQL_SELECT_FORMAT_AND_DATA, id=record.value("id")
-            )
+            query = self.executeQuery(SQL_SELECT_FORMAT_AND_DATA, id=record.value("id"))
 
             data = {}
             while query.next():
