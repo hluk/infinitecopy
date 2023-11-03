@@ -32,9 +32,7 @@ def serverName(session):
 
 def parseArguments(args=None):
     parser = argparse.ArgumentParser(
-        description=QCoreApplication.translate(
-            "main", "Simple clipboard manager"
-        )
+        description=QCoreApplication.translate("main", "Simple clipboard manager")
     )
     parser.add_argument(
         "--version",
@@ -67,17 +65,13 @@ def parseArguments(args=None):
     parser.add_argument(
         QCoreApplication.translate("main", "commands"),
         nargs="*",
-        help=QCoreApplication.translate(
-            "main", "Commands to send to the application"
-        ),
+        help=QCoreApplication.translate("main", "Commands to send to the application"),
     )
     return parser.parse_args(args)
 
 
 def createDbPath():
-    dataPath = QStandardPaths.writableLocation(
-        QStandardPaths.AppLocalDataLocation
-    )
+    dataPath = QStandardPaths.writableLocation(QStandardPaths.AppLocalDataLocation)
     if not QDir(dataPath).mkpath("."):
         raise SystemExit(f"Failed to create data directory {dataPath}")
 

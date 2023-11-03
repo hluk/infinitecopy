@@ -16,9 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def plugin_paths():
-    for path in QStandardPaths.standardLocations(
-        QStandardPaths.AppConfigLocation
-    ):
+    for path in QStandardPaths.standardLocations(QStandardPaths.AppConfigLocation):
         yield f"{path}/plugins"
 
 
