@@ -7,7 +7,7 @@ authors = ["Lukas Holecek <hluk@email.cz>"]
 include = ["infinitecopy.png", "qml/*"]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
+python = ">=3.10,<3.13"
 PySide6-Essentials = "^6.6.0"
 PyGObject = [
   {version = "^3.42.0", markers = "platform_system == 'Linux'"}
