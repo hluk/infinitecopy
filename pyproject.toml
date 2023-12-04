@@ -15,7 +15,7 @@ PyGObject = [
 
 [tool.poetry.dev-dependencies]
 Nuitka = "^1.8"
-zstandard = "^0.21.0"
+zstandard = "^0.22.0"
 imageio = [
   {version = "^2.22.4", markers = "platform_system != 'Linux'"}
 ]
