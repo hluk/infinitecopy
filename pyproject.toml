@@ -20,7 +20,7 @@ imageio = [
   {version = "^2.22.4", markers = "platform_system != 'Linux'"}
 ]
 pillow = "^10.1.0"
-pylint = "^3.0.3"
+pylint = "^3.1.0"
 pytest = "^8.0.2"
 pytest-cov = "^4.1.0"
 
