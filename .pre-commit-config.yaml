@@ -40,7 +40,7 @@ repos:
 
   # Linter and formatter
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.2.2
+    rev: v0.3.2
     hooks:
       - id: ruff
         args:
@@ -50,7 +50,7 @@ repos:
 
   # Security linter
   - repo: https://github.com/pycqa/bandit
-    rev: 1.7.7
+    rev: 1.7.8
     hooks:
       - id: bandit
         name: bandit
