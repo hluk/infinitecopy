@@ -22,7 +22,7 @@ imageio = [
 pillow = "^10.1.0"
 pylint = "^3.1.0"
 pytest = "^8.0.2"
-pytest-cov = "^4.1.0"
+pytest-cov = "^5.0.0"
 
 [tool.poetry.scripts]
 infinitecopy = "infinitecopy.__main__:main"
