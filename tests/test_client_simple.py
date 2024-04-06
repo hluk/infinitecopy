@@ -13,4 +13,4 @@ def test_server_not_running():
 def test_unknown_command(server):
     expected_error = "Error: Unknown message received: _bad_command_"
     with raises(RuntimeError, match=expected_error):
-        assert server("_bad_command_") == b""
+        server("_bad_command_")
