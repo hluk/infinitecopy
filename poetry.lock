@@ -255,12 +255,12 @@ files = [
 
 [[package]]
 name = "nuitka"
-version = "2.3.11"
+version = "2.4.5"
 description = "Python compiler with full language support and CPython compatibility"
 optional = false
 python-versions = "*"
 files = [
-    {file = "Nuitka-2.3.11.tar.gz", hash = "sha256:76ef09da42dc41c8f96073bba1954d09bf595cbb06cc9aba77ea3000eb1f3ad1"},
+    {file = "Nuitka-2.4.5.tar.gz", hash = "sha256:26743df70d08278c67cdd1dac581bc3bd5ad49b60f1101aef4e99911a323ecc4"},
 ]
 
 [package.dependencies]
@@ -721,4 +721,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "2755529d73c3263aaf0933df4d82c1a2d837902384c9b66250d78d444f171ad3"
+content-hash = "6f615a27809e1e3b7dea6bfe9da83c7f76ef865f0a26bfad64f56a688bf0e810"
