@@ -21,7 +21,7 @@ imageio = [
 ]
 pillow = "^10.3.0"
 pylint = "^3.1.0"
-pytest = "^8.2.0"
+pytest = "^8.3.2"
 pytest-cov = "^5.0.0"
 
 [tool.poetry.scripts]
