@@ -25,7 +25,7 @@ jobs:
           - ubuntu-latest
 
         python-version:
-          - "3.11"
+          - "3.13"
 
         include:
           - os: windows-latest
@@ -115,7 +115,9 @@ jobs:
           QT_QPA_PLATFORM: wayland
           KWIN_OPENGL_INTERFACE: egl_wayland
         run: >-
-          weston & sleep 5;
+          weston --socket=infinitecopy & sleep 5;
+          export WAYLAND_DISPLAY=infinitecopy;
+          export DISPLAY="";
           poetry run pytest
           --cov-config=.coveragerc
           --cov=infinitecopy

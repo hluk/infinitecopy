@@ -1,19 +1,18 @@
-[tool.poetry]
+[project]
 name = "infinitecopy"
 version = "0.1.0"
 description = "Simple clipboard manager"
 license = "GPL-3.0-or-later"
-authors = ["Lukas Holecek <hluk@email.cz>"]
+authors = [{name = "Lukas Holecek", email = "hluk@email.cz"}]
 include = ["infinitecopy.png", "qml/*"]
+requires-python = ">=3.10,<3.14"
 
-[tool.poetry.dependencies]
-python = ">=3.10,<3.13"
-PySide6-Essentials = "^6.7.3"
-PyGObject = [
-  {version = "^3.42.0", markers = "platform_system == 'Linux'"}
+dependencies = [
+    "PySide6-Essentials~=6.8.1",
+    "PyGObject~=3.50.0; platform_system == 'Linux'",
 ]
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 Nuitka = "^2.5"
 zstandard = "^0.23.0"
 imageio = [
@@ -24,7 +23,7 @@ pylint = "^3.3.1"
 pytest = "^8.3.3"
 pytest-cov = "^6.0.0"
 
-[tool.poetry.scripts]
+[project.scripts]
 infinitecopy = "infinitecopy.__main__:main"
 
 [build-system]
