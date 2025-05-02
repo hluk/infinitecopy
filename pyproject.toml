@@ -13,15 +13,15 @@ dependencies = [
 ]
 
 [tool.poetry.group.dev.dependencies]
-Nuitka = "^2.5"
+Nuitka = "^2.6"
 zstandard = "^0.23.0"
 imageio = [
   {version = "^2.22.4", markers = "platform_system != 'Linux'"}
 ]
-pillow = "^11.0.0"
-pylint = "^3.3.3"
-pytest = "^8.3.3"
-pytest-cov = "^6.0.0"
+pillow = "^11.2.1"
+pylint = "^3.3.6"
+pytest = "^8.3.5"
+pytest-cov = "^6.1.1"
 
 [project.scripts]
 infinitecopy = "infinitecopy.__main__:main"
