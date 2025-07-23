@@ -20,8 +20,8 @@ imageio = [
 ]
 pillow = "^11.3.0"
 pylint = "^3.3.7"
-pytest = "^8.3.5"
-pytest-cov = "^6.1.1"
+pytest = "^8.4.1"
+pytest-cov = "^6.2.1"
 
 [project.scripts]
 infinitecopy = "infinitecopy.__main__:main"
