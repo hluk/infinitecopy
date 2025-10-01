@@ -21,7 +21,7 @@ imageio = [
 pillow = "^11.3.0"
 pylint = "^3.3.8"
 pytest = "^8.4.2"
-pytest-cov = "^6.2.1"
+pytest-cov = "^7.0.0"
 
 [project.scripts]
 infinitecopy = "infinitecopy.__main__:main"
