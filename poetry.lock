@@ -256,18 +256,25 @@ files = [
 
 [[package]]
 name = "nuitka"
-version = "2.7.5"
+version = "2.8.4"
 description = "Python compiler with full language support and CPython compatibility"
 optional = false
 python-versions = "*"
 groups = ["dev"]
 files = [
-    {file = "Nuitka-2.7.5.tar.gz", hash = "sha256:37d0f8b59fbffb7c9f882f6a6410d40fb9d8f312c33951aa324f84677874e2a1"},
+    {file = "Nuitka-2.8.4.tar.gz", hash = "sha256:06b020ef33be97194f888dcfcd4c69c8452ceb61b31c7622e610d5156eb7923d"},
 ]
 
 [package.dependencies]
 ordered-set = ">=4.1.0"
 zstandard = ">=0.15"
+
+[package.extras]
+all = ["imageio", "setuptools (>=42)", "toml", "zstandard (>=0.15)"]
+app = ["zstandard (>=0.15)"]
+build-wheel = ["setuptools (>=42)", "toml", "wheel"]
+icon-conversion = ["imageio"]
+onefile = ["zstandard (>=0.15)"]
 
 [[package]]
 name = "numpy"
@@ -844,4 +851,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "e425038ea0a096b5851eea69c42bd614c6b519a7af5efa33d3e3ba6f8b8dfb10"
+content-hash = "5f157289d0387f88ce87efa2b03fb3811af50901ad19447c66dbc95e2aef02ee"
