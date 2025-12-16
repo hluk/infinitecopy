@@ -8,7 +8,7 @@ include = ["infinitecopy.png", "qml/*"]
 requires-python = ">=3.10,<3.14"
 
 dependencies = [
-    "PySide6-Essentials~=6.8.1",
+    "PySide6-Essentials~=6.8.3",
     "PyGObject~=3.50.0; platform_system == 'Linux'",
 ]
 
@@ -19,7 +19,7 @@ imageio = [
   {version = "^2.22.4", markers = "platform_system != 'Linux'"}
 ]
 pillow = "^12.0.0"
-pylint = "^4.0.2"
+pylint = "^4.0.4"
 pytest = "^8.4.2"
 pytest-cov = "^7.0.0"
 
