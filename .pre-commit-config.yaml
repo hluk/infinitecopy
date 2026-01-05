@@ -41,7 +41,7 @@ repos:
 
   # Linter and formatter
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.7
+    rev: v0.14.10
     hooks:
       - id: ruff
         args:
