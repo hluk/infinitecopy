@@ -11,9 +11,8 @@ run](https://github.com/hluk/infinitecopy/actions?query=is%3Asuccess).
 
 Clone repository and **start** the app with:
 
-    poetry run python -m ensurepip --upgrade
-    poetry install
-    poetry run infinitecopy
+    uv sync
+    uv run infinitecopy
 
 Install **pre-commit** for local repository clone:
 
@@ -22,7 +21,7 @@ Install **pre-commit** for local repository clone:
 Run **all checks**:
 
     pre-commit run --all-files
-    poetry run pytest
+    uv run pytest
 
 # Plugins
 

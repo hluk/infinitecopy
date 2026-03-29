@@ -2,11 +2,12 @@
 set -e
 
 version=$(
-    git describe --match='v*' |
+    git describe --tags --match='v*' |
     sed -e 's/v//' -e 's/-/+/' -e 's/-/./'
 )
 
 sed -i -e "s/^__version__\s*=\s.*/__version__ = '$version'/" \
   infinitecopy/__init__.py
 
-poetry version "$version"
+sed -i -e "s/^version\s*=\s.*/version = \"$version\"/" \
+  pyproject.toml
