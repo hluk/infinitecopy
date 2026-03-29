@@ -60,7 +60,7 @@ jobs:
 
       - name: (Linux) Install dependencies
         if: runner.os == 'Linux'
-        uses: nick-invision/retry@v3
+        uses: nick-invision/retry@v4
         with:
           timeout_minutes: 10
           retry_wait_seconds: 30
@@ -80,7 +80,7 @@ jobs:
 
       - name: (Linux) Install runtime dependencies
         if: runner.os == 'Linux'
-        uses: nick-invision/retry@v3
+        uses: nick-invision/retry@v4
         with:
           timeout_minutes: 10
           retry_wait_seconds: 30
