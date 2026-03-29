@@ -53,8 +53,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Use Poetry
-        uses: Gr1N/setup-poetry@v9
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
 
       - name: (Linux) Install dependencies
         if: runner.os == 'Linux'
@@ -74,7 +76,7 @@ jobs:
             gir1.2-atspi-2.0
 
       - name: Install dependencies
-        run: poetry install --no-root --no-interaction --no-ansi
+        run: uv sync --frozen
 
       - name: (Linux) Install runtime dependencies
         if: runner.os == 'Linux'
@@ -96,7 +98,7 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
         run: >-
-          poetry run pytest
+          uv run pytest
           --cov-config=.coveragerc
           --cov=infinitecopy
           --cov-report=term
@@ -118,7 +120,7 @@ jobs:
           weston --socket=infinitecopy & sleep 5;
           export WAYLAND_DISPLAY=infinitecopy;
           export DISPLAY="";
-          poetry run pytest
+          uv run pytest
           --cov-config=.coveragerc
           --cov=infinitecopy
           --cov-report=term
@@ -126,7 +128,7 @@ jobs:
       - name: (Windows) Test
         if: runner.os == 'Windows'
         run: >-
-          poetry run pytest
+          uv run pytest
           --cov-config=.coveragerc
           --cov=infinitecopy
           --cov-report=term
@@ -140,7 +142,7 @@ jobs:
           PYTHONIOENCODING: utf-8
           LD_LIBRARY_PATH: /usr/local/lib/:$LD_LIBRARY_PATH
         run: >-
-          poetry run python -m nuitka
+          uv run python -m nuitka
           --onefile
           --standalone
           --python-flag=no_site

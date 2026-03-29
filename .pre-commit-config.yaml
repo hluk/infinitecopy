@@ -3,7 +3,6 @@ ci:
   autoupdate_schedule: monthly
   skip:
     - pylint
-    - pytest
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -61,21 +60,6 @@ repos:
     hooks:
       - id: pylint
         name: pylint
-        entry: poetry run pylint
+        entry: uv run pylint
         language: system
         types_or: [python]
-
-  - repo: local
-    hooks:
-      - id: pytest
-        name: pytest
-        entry: env QT_QPA_PLATFORM=minimal poetry run pytest
-        language: system
-        types_or: [python]
-        pass_filenames: false
-        always_run: true
-        args:
-          - --cov-reset
-          - --cov-config=.coveragerc
-          - --cov=infinitecopy
-          - --cov-report=term
