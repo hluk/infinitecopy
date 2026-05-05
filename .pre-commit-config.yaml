@@ -16,7 +16,7 @@ repos:
 
   # Sort imports
   - repo: https://github.com/pycqa/isort
-    rev: 8.0.1
+    rev: 9.0.0a3
     hooks:
       - id: isort
         name: isort
@@ -40,7 +40,7 @@ repos:
 
   # Linter and formatter
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.9
+    rev: v0.15.12
     hooks:
       - id: ruff
         args:
