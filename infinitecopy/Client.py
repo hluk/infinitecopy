@@ -85,7 +85,7 @@ class Client:
         elif isinstance(arg, bytes):
             arg = QByteArray(arg)
         elif not isinstance(arg, QByteArray):
-            raise RuntimeError(f"Can send only bytes, not an object: {arg!r}")
+            raise TypeError(f"Can send only bytes, not an object: {arg!r}")
 
         self.stream.writeUInt8(msg_id)
         self.stream.writeBytes(arg)

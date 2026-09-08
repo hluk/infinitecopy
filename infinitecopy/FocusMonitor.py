@@ -6,7 +6,7 @@ import gi
 from PySide6.QtCore import QObject, Signal
 
 gi.require_version("Atspi", "2.0")
-from gi.repository import Atspi  # noqa: E402
+from gi.repository import Atspi
 
 TEXT_ENTRY_ROLES = [
     Atspi.Role.ENTRY,

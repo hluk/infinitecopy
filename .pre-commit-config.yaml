@@ -1,8 +1,6 @@
 ---
 ci:
   autoupdate_schedule: monthly
-  skip:
-    - pylint
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -14,38 +12,17 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
 
-  # Sort imports
-  - repo: https://github.com/pycqa/isort
-    rev: 9.0.1
-    hooks:
-      - id: isort
-        name: isort
-        args:
-          - --line-length=79
-          - --profile=black
-
-  # Remove unused imports, variables, statements
-  - repo: https://github.com/PyCQA/autoflake
-    rev: v2.4.0
-    hooks:
-      - id: autoflake
-
-  # Auto-update syntax
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.21.2
-    hooks:
-      - id: pyupgrade
-        args:
-          - --py311-plus
-
   # Linter and formatter
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.16.6
     hooks:
       - id: ruff
         args:
+          - --fix
           # ignore: E501 Line too long
           - --ignore=E501
+          # ignore: N999 Invalid module name: 'Application'
+          - --ignore=N999
       - id: ruff-format
 
   # Security linter
@@ -55,11 +32,3 @@ repos:
       - id: bandit
         name: bandit
         exclude: tests/
-
-  - repo: local
-    hooks:
-      - id: pylint
-        name: pylint
-        entry: uv run pylint
-        language: system
-        types_or: [python]
