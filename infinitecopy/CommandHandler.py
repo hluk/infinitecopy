@@ -22,7 +22,7 @@ class CommandHandler:
         client = Client(socket)
         try:
             self._on_message_helper(client)
-        except Exception as e:
+        except RuntimeError as e:
             logger.info("Client failure: %s", e)
             client.sendError(str(e))
         finally:
